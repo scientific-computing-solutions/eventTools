@@ -1,0 +1,226 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage[firstpage]{draftwatermark}
+\title{EventTools: Accounting for Lag-times}
+\author{Daniel Dalevi}
+% \VignetteIndexEntry{Predict from data - Basic tutorial}
+%\VignetteEngine{knitr::knitr} 
+
+\SetWatermarkText{DRAFT: UNDER DEVELOPMENT}
+\SetWatermarkLightness{0.75}
+\SetWatermarkScale{2}
+
+\begin{document}
+\sloppy
+
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(
+concordance=TRUE
+)
+@
+
+\maketitle
+
+\section{Introduction}
+The eventTools package contain some extensions of functionality for the event prediction package. 
+
+\section{Preliminary steps}
+Before starting this tutorial you will need to install the eventTools package and its dependencies. For all examples below, ensure you load the library first. 
+<<load,message=FALSE>>=
+library( eventTools )
+library( eventPrediction )
+@
+
+\section{Estimating the lag-time}
+Sometimes there are reasons to believe that data in the early part of the KM curve will follow a different distribution as oppose to the latter part; for example, if there is a lag-effect before treatment starts giving effect. A simulated OS data set is available in the package and we will use this for illustration. It contains $979$ subjects and was simulated under the assumptions of a lag-time of $4$ months where no treatment effect at start but then a post-lag HR of $0.45$. The control median was set to $5.8$ with a shape parameter of $1.2$. 
+
+<<echo=FALSE, fig=TRUE>>=
+library( nonproportionalHazards)
+study <- delayedResponse( lag.time=4, 
+                              median.control.time=5.8, 
+                              hazard.ratio=0.45,
+                              followup.time=20, 
+                              total.patients=979, 
+                              alpha=0.05,
+                              randomization=1, 
+                              accrual.duration=12, 
+                              accrual.weight=1,
+                              definition=hazard )
+    landmark.times <- seq(0, 32, length.out=100)
+    curves <- survival( study, landmark.times )
+    plot( curves, xlab="Study time [months]" )
+@
+
+The dataset is loaded into R and an EventData object is created.
+<<>>=
+load( "~/BandI/r-library-eventtools/data/lag.data.rda" )
+
+my.data <- EventData( data=lag.data,
+                      subject="subject",
+                      rand.date="randDate",
+                      has.event="hasEvent",
+                      withdrawn="withdrawn",
+                      time=list(event.date="eventDate",last.date="lastDate") )
+@
+A model can be fitted to this data (see EventPrediction vignette) without accounting for the lag-effect. The survival curve can be plotted with the model. 
+<<>>=
+my.fit <- fit( my.data )
+plot( my.fit )
+@
+
+<<echo=FALSE>>=
+# From: http://stackoverflow.com/questions/15874214/piecewise-function-fitting-with-nls-in-r
+findPiecewiseLinearCut <- function( x, y ) {
+  f <- function( Cx ) 
+  {
+    lhs <- function(x) ifelse(x < Cx,Cx-x,0)
+    rhs <- function(x) ifelse(x < Cx,0,x-Cx)
+    
+    fit <- tryCatch( lm(y ~ lhs(x) + rhs(x)), error=function(e) NULL )
+    if( !is.null( fit )) {
+      c(summary(fit)$r.squared, 
+        summary(fit)$coef[1], 
+        summary(fit)$coef[2],
+        summary(fit)$coef[3])
+    }
+    else{
+      c( NA, NA, NA, NA )
+    }
+  }
+  
+  r2 <- function(x) -(f(x)[1])
+  
+  res <- optimize(r2,interval=c(min(x),max(x)))
+  c(res$minimum,f(res$minimum))
+}
+@
+In order to get an estimate of the lag-time we can use the survival package and fit an exponential model to the data (here, the event-rate is the only parameter - could also use another distribution but this one is stable/easy to fit). If we then include a factor in the model which is TRUE if a patient is in the lag-period given lag-time $T$ and FALSE otherwise, then we can iterate over different values of $T$ and see which corresponds to the best model fit (the true lag-time is $120$ for this dataset).  
+<<>>=
+   dayspermonth = 365.25/12
+   lagT <- seq( 0.5, 9, 0.1 )*dayspermonth
+   aicR <- rep( NA, length( lagT ))
+
+   for( i in seq_along( lagT ) ){
+      tmp.data <-  my.data@subject.data
+      tmp.data$ind <- tmp.data$time > lagT[i]
+      aicR[i] <- AIC( survreg( Surv( time, has.event )~ind, 
+                               data=tmp.data, 
+                               dist="exponential" ) )
+   }
+   
+   res <- findPiecewiseLinearCut( lagT, aicR )
+   best_Cx <- res[1]
+   coef1 <- res[3]
+   coef2 <- res[4]
+   coef3 <- res[5]
+   plot( lagT, aicR, type="l", col="red", main=paste0( "Est=", round( best_Cx, 2 ) ) )
+   abline( v=best_Cx, col="black", lty=2 )
+   abline( coef1+best_Cx*coef2,-coef2, col="red", lwd=3 ) #left line 
+   abline( coef1-best_Cx*coef3, coef3, col="blue", lwd=3 ) # Right line
+   estLagT <- best_Cx
+@
+
+
+
+\section{Right censor data based on the KM curve}
+To allow for different shapes before and after $T$ we cut the data at the estimated lag-time. This is equivalent of a study with a fixed follow up of $T$ (our lag-time) meaning that no subject is studied after $T$. The package allows for cutting the data in this way based on the subject times using the function \texttt{KMRightCensor}.
+ 
+<<>>=
+right.cens.data <- KMRightCensor( my.data, estLagT )
+right.cens.fit <- fit( right.cens.data )
+plot( right.cens.fit, ylim=c(0.5,1) )
+@
+
+The Weibull parameters can be obtained from the fit-object.
+<<>>=
+right.cens.fit@simParams@parameters
+@
+
+This can be compared to the original fit.
+<<>>=
+my.fit@simParams@parameters
+@
+
+\section{Fit a model on left truncated data}
+As you may already noted we also need a second model fitted on the remaining curve. This will be dealt with by left-truncating the data at the same cut-point selected above meaning that all the subjects have been in the trial for $t>T$. The \texttt{LeftFit} function simply removes all subjects that have not yet exit the lag-period before fitting a model using left-truncated data. 
+To do the estimation the \texttt{weibreg} function from the \texttt{eha} package is used internally in the LeftFit function.
+
+<<>>=
+ left.trunc.fit <- LeftFit( my.data, estLagT )
+ left.trunc.fit@simParams@parameters
+ plot( left.trunc.fit )
+@
+
+\section{Event Prediction}
+We use the simulate procedure to generate when we expect events to occur. This function uses the parameters of the two fitted Weibull models to simulate the time-to-event for all subjects who have not had an event. Conditional Weibull distributions are used to take into account the time since randomization for each subject. 
+<<>>=
+  results <- simulatePW( right.cens.fit, left.trunc.fit,  
+    Nsim = 500, #Number of simulations to perform
+    seed = 20160322 ) #A random seed for reproducibility
+  results <- predict( results, event.pred=925 )
+  plot( results, show.title=TRUE) 
+@
+
+The "true" time when reaching $925$ events for this simulated dataset is \textbf{2017-04-03}. This can be compared with the prediction obtained from a model assuming no lag-time which predicts an earlier date.
+
+<<>>=
+  results <- simulate( my.fit,  
+    Nsim = 500, #Number of simulations to perform
+    seed = 20160322 ) #A random seed for reproducibility
+  results <- predict( results, event.pred=925 )
+  plot( results, show.title=TRUE )
+@
+
+The previous functionality is also available in the simulatePW function. For example, adding new subjects while recruitment is still ongoing in the trial can be achieved by adding the argument \texttt{accrualGenerator}. For more details, see the Predict from data vignette and the \texttt{simulate} function. 
+
+
+
+%' \section{Estimating the lagtime}
+%' Accurately estimating $T$ from data may not always be possible depending on how much data is available and the difference in HR before and after T. Here are a couple of suggestions that may be tried. 
+%' \subsection{Maximum likelihood}
+%' Here we calculate the likelihoods of the two models and multiply them to find the optimal  $T$. Different shape and scale parameters are allowed before and after the cut point.
+%' <<>>=
+%' lagT <- seq( 0.5, 8, 0.5 )*dayspermonth
+%' 
+%' loglikR <- rep( NA, length( lagT ))
+%' loglikL <- rep( NA, length( lagT ))
+%' 
+%' for( i in seq_along( lagT ) ){
+%'   # Right censured model
+%'   right.cens.data <- KMRightCensor( my.data, lagT[i] )
+%'   right.cens.fit <- fit( right.cens.data )
+%'   loglikR[i] <- right.cens.fit@model$loglik[1]
+%'   
+%'   # Left-truncated model
+%'   left.trunc.fit <- LeftFit( my.data, lagT[i] )
+%'   loglikL[i] <- ifelse( is.null(left.trunc.fit), NA, left.trunc.fit@model[[1]]$loglik[1] )
+%' }
+%' @
+%' 
+%' Then you can plot the sum of the log-likelihood and see where the maximum occurs.
+%' <<>>=
+%' plot( lagT, loglikR+loglikL, col="red", type="l" )
+%' abline( v=trueLagT )
+%' @
+%' 
+%' As you can see there is a peak at $120$ but the maximum occurs earlier. HOwever, the fit after $120$ becomes a lot worse which could perhaps be used as an indicator to pick the right value of $T$.  
+%' 
+%' \subsection{Piecewise linear function}
+%' An alternative approach would be to do use the KM estimate of the survival time and plot loglog(S) versus logt and fit a curve to this.
+%' 
+%' <<>>=
+%'  piecewiseLinearEstimateT( my.data )
+%' @
+%' 
+%' A non-parametric bootstrap function is also available that resamples from the dataset and re-estimates T.
+%' <<>>=
+%'  res <- piecewiseLinearBootT( my.data, 200 )
+%'  hist( res, 30, main=paste0("Mean=", round( mean(res, na.rm=T), 2) ) )
+%'  abline( v=mean(res), col="red", lwd=2 )
+%' @
+\end{document}
+
