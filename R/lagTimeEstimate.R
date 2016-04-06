@@ -25,7 +25,7 @@ setClass("LagTimeEstimate",
 ##' @export
 setGeneric( "estimateLagTime",
             function( object,  t.start, t.stop, dt, dist="exponential", 
-                      criterion="AIC", smoothing=TRUE )
+                      criterion="AIC" )
               standardGeneric( "estimateLagTime") 
 )
 
@@ -48,7 +48,7 @@ setMethod( "estimateLagTime",signature=c( "EventData" ),
      tmp.data$ind <- tmp.data$time > lagT[i]
      model <- survreg( Surv( time, has.event )~ind, 
                        data=tmp.data, 
-                       dist=dist, ... )
+                       dist=dist )
      xic[i] <- ifelse( criterion=="AIC", AIC( model ), BIC( model ) )
    }
 
@@ -97,7 +97,7 @@ setMethod( "getEstimate",signature=c( "LagTimeEstimate" ),
 ##' @export
 setMethod( "plot",
    signature( x="LagTimeEstimate", y="missing" ),
-   function( x,  smoothing=TRUE, ... ) { 
+   function( x, smoothing=TRUE, ... ) { 
      main <- if( !is.null( getEstimate(x, smoothing) ) ){  
        paste0( "Change point estimate = ", round( getEstimate(x), 2 ) )
      }
@@ -108,8 +108,8 @@ setMethod( "plot",
      }
      { NULL }
      
-     plot( x@times, y, type="l", col="red", main=main, 
-           xlab="Time [Days]", ylab=criterion,... )
+     plot( x@times, x@XIC, type="l", col="red", main=main, 
+           xlab="Time [Days]", ylab=x@criterion,... )
      if( !is.null( my.smooth)  ){
        lines( my.smooth$x, my.smooth$y, col="brown", lwd=2 )
      }
