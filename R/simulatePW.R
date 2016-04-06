@@ -1,7 +1,6 @@
 ##' Conditional function for piece wise model 
-##' @params params paramter object with study settings
-##' @params hr HR
-#t.conditional <- my.data@subject.data$time
+##' @param params paramter object with study settings
+##' @param hr HR
 rcpwweibull <- function( t.conditional, params, HR ) {
   params <- as.list( params )
   
