@@ -1,5 +1,5 @@
-#' This file contains functions to cut data based on the KM curve, 
-#' i.e. based on the subject times. 
+# This file contains functions to cut data based on the KM curve, 
+# i.e. based on the subject times. 
 
 ##' KMRightCensor the Event Data
 ##' 
@@ -50,50 +50,3 @@ setMethod( "KMRightCensor", "EventData", function( object, time.cut ){
     followup=object@followup
   )
 })
-
-# ##' KMLeftTruncate the Event Data
-# ##' 
-# ##' Creates a new EventData from an existing one where each subject
-# ##' is truncated at subject time T (not study time)
-# ##' @param object The EventData object
-# ##' @param time.cut The time in days when to left-truncate the data
-# ##' @rdname KMLeftTruncate-methods
-# ##' @name KMLeftTruncate
-# ##' @return \code{EventData} object with the data censored at the appropriate point
-# ##' @export
-# setGeneric( "KMLeftTruncate", function( object, time.cut ) 
-#   standardGeneric("KMLeftTruncate") )
-# 
-# 
-# ##' @rdname KMLeftTruncate-methods
-# ##' @name KMLeftTruncate
-# ##' @export
-# setMethod( "KMLeftTruncate", "EventData", function( object, time.cut ){
-#   
-#   subject.data <- object@subject.data
-#   
-#   if( time.cut <= 0 ){
-#     warning( "The subject time (time.cut) must be greater than 0!" )
-#   }
-#   
-#   subject.data <- subject.data[ subject.data$time > time.cut, ]
-#   if( nrow( subject.data ) == 0 ){
-#     warning( "No subjects left, please use a lower cut value (time-cut)!" )
-#   }  
-#   
-#   EventData(
-#     data=subject.data,
-#     subject="subject",
-#     rand.date="rand.date",
-#     has.event="has.event",
-#     withdrawn="withdrawn",
-#     time="time",
-#     site="site",
-#     event.type="event.type",
-#     followup=object@followup
-#   )
-# })
-# 
-
-
-

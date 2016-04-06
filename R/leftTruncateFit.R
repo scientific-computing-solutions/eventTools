@@ -1,8 +1,9 @@
-#' This file contains functions for fitting the Weibull to left-truncated data. 
+##' @importFrom eventPrediction FromDataParam
+NULL
 
 ##' LeftFit the Event Data
 ##' 
-##' Creates ann EventModel based on the left truncated data
+##' Creates an EventModel based on the left truncated data
 ##' @param object The EventData object
 ##' @param time.cut The time in days when to cut the data
 ##' @param dist Distribution (weibull)
