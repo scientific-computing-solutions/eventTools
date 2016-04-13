@@ -3,15 +3,15 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{fullpage}
-\usepackage[firstpage]{draftwatermark}
+%\usepackage[firstpage]{draftwatermark}
 \title{EventTools: Non-proportional hazards and lagtimes}
 \author{Daniel Dalevi}
 % \VignetteIndexEntry{Predict from data - Basic tutorial}
 %\VignetteEngine{knitr::knitr} 
 
-\SetWatermarkText{DRAFT: UNDER DEVELOPMENT}
-\SetWatermarkLightness{0.75}
-\SetWatermarkScale{2}
+%\SetWatermarkText{DRAFT: UNDER DEVELOPMENT}
+%\SetWatermarkLightness{0.75}
+%\SetWatermarkScale{2}
 
 \begin{document}
 \sloppy
@@ -26,7 +26,7 @@ concordance=TRUE
 \maketitle
 
 \section{Introduction}
-The eventTools package contains some extensions of functionality for the eventPrediction package. It will use the same interface when possible and the idea is to mimic the command-sequences used and propagate the functionality (accrual processes, dropouts etc). The first add in is a method for dealing with non-proportional hazards and lag-times in Predict from data, available in version 1.0. The plan is to include more functions to this package with iterative releases. 
+The eventTools package contains some extensions of functionality for the eventPrediction package. It will use the same interface when possible and the idea is to mimic the command-sequences used and propagate the functionality (accrual processes, dropouts etc). The first add-in is a method for dealing with non-proportional hazards and lag-times in Predict from data, available in version 1.0. The plan is to include more functions to this package with iterative releases. 
 
 \section{Preliminary steps}
 Before starting this tutorial you will need to install the eventPrediction and the eventTools packages and their dependencies. For all examples below, ensure you load the libraries first. 
