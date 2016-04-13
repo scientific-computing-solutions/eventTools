@@ -1,7 +1,10 @@
 # Some common functionality and constants
 
+##' Sets the smoothing parameter, usally in (0,1]. 
+##' 
+##' @return The spline resolution
 ##' @export 
-dayspermonth <- 365.25/12
+splineResolution <- function() {
+  getOption('eventTools.spline.resolution', 0.5 )
+}
 
-##' @export 
-spline.resolotion <- 0.5

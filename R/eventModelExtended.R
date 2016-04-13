@@ -38,7 +38,7 @@ setMethod("show",
 setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
   function(x, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
                 ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
-      print( paste0( "This function is not yet defined, please use: ",
+      warning( paste0( "This function is not yet defined, please use: ",
                 "plot( right.censored.model, left.truncated.model )" ) )
   }
 )
@@ -49,7 +49,7 @@ setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
 ##' @rdname plot-methods
 ##' @aliases plot,EventModel,EventModelExtended-method
 ##' @export
-# !!Needs to be checked. Have basically joint the curves where the right-cens model ends!!
+## Basically joins the curves where the right-cens model ends. Are there otherways to do this?
 setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
  function( x, y, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
            ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
@@ -76,7 +76,6 @@ setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
    # Connect start point of left-truncated curve with 
    # the end of the right-censored curve
    y.new <- y.new - y.new[ 1 ] + y.end.right.cens
-   
    lines( xx, y.new, lwd=3, col="orange" )
    
    y.right <- seq(.99,.01,by=-.01)

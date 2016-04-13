@@ -1,11 +1,12 @@
 ##' Conditional function for piece wise model 
 ##' @param params paramter object with study settings
 ##' @param hr HR
-rcpwweibull <- function( t.conditional, params, HR ) {
+rcpweibull <- function( t.conditional, params, HR ) {
   params <- as.list( params )
   
   idx <- which( t.conditional < params$time.cut )
   
+  if( length(HR) == 1 ) HR <- rep( HR, length(t.conditional) )
   # HR is a vector why rate becomes a vector, not 
   # sure why this is necessary, need to check!
   params$rate <- params$rate*(HR)^{1/params$shape}
@@ -35,13 +36,19 @@ rcpwweibull <- function( t.conditional, params, HR ) {
 }
 
 
-##' @export
+##' Simulate method for use when predicting from piecewise Weibull
+##' @param object The model fitted on Right censored data
+##' @param object2 The model fittend on Left truncated/Right censored data
+##' @rdname simulatePW-methods
+##' @export 
 setGeneric( "simulatePW",
   function( object, object2, ... )
            standardGeneric( "simulatePW")
 )
 
 
+
+##' @rdname simulatePW-methods
 ##' @export
 setMethod( "simulatePW",signature=c( "EventModel", "EventModelExtended" ),
   function( object, object2, ... ){
@@ -53,11 +60,15 @@ setMethod( "simulatePW",signature=c( "EventModel", "EventModelExtended" ),
   simulate.Internal( object2@event.data, object@simParams, object2@simParams, object2@time.cut, ... )
 })
 
+##' Only used internally
 simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut, 
                                accrualGenerator=NULL,Naccrual=0, Nsim=1e4, 
                                seed=NULL, limit=0.05, 
-                               longlagsettings=NULL,HR=NULL,r=NULL,
-                               dropout=NULL){
+                               longlagsettings=NULL,
+                               dropout=NULL ){
+  # THese are not applicable here
+  r <- NULL
+  HR <- NULL
   #validate the arguments
   eventPrediction:::validate.simulate.arguments(accrualGenerator,Naccrual,Nsim,seed,
                               limit,longlagsettings,HR,r,data)  
@@ -100,7 +111,7 @@ simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut,
                     indat=indat,newrecs=newrecs,HR=HR,r=r,
                     dropout.rate=dropout.rate, 
                     dropout.shape=dropout.shape, followup=data@followup,
-                    conditionalFunction= rcpwweibull )
+                    conditionalFunction=rcpweibull )
   
   #post process the output
   event.type <- sapply( outcomes,function(x){x$event.type})

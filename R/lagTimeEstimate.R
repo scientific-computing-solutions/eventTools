@@ -41,7 +41,7 @@ setMethod( "estimateLagTime",signature=c( "EventData" ),
    if( t.stop < t.start ){ stop( "Stop time needs to be greater than start time" ) }
    if( dt < 0 ){ stop( "Time increment (dt) needs to be positive" ) }
    
-   lagT <- seq( t.start, t.stop, dt )*dayspermonth
+   lagT <- seq( t.start, t.stop, dt )*standarddaysinyear()/12
    xic <- rep( NA, length( lagT ))
    for( i in seq_along( lagT ) ){
      tmp.data <-  my.data@subject.data
@@ -78,7 +78,7 @@ setMethod( "getEstimate",signature=c( "LagTimeEstimate" ),
            function( object, smoothing = TRUE, ... ) {
     if( is.null( object@times ) ){ return( NULL ) }
      if( smoothing ) {
-       my.smooth <- smooth.spline( object@XIC~object@times, spar=spline.resolotion )
+       my.smooth <- smooth.spline( object@XIC~object@times, spar=splineResolution() )
        my.smooth$x[ which.min( my.smooth$y ) ]
       } 
      else {
@@ -104,7 +104,7 @@ setMethod( "plot",
      { NULL }
      
      my.smooth <- if( smoothing == TRUE ) {
-       smooth.spline( x@XIC~x@times, spar=spline.resolotion )
+       smooth.spline( x@XIC~x@times, spar=splineResolution() )
      }
      { NULL }
      

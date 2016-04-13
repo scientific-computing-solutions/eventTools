@@ -6,26 +6,26 @@ NULL
 ##' Creates an EventModel based on the left truncated data
 ##' @param object The EventData object
 ##' @param time.cut The time in days when to cut the data
-##' @param dist Distribution (weibull)
 ##' @rdname LeftFit-methods
 ##' @name LeftFit
 ##' @return \code{EventData} object with the data censored at the appropriate point
 ##' @export
 setGeneric( "LeftFit", 
-            function( object, time.cut, dist="weibull" ) 
+            function( object, time.cut, ... ) 
   standardGeneric("LeftFit") )
 
 
 ##' @rdname LeftFit-methods
 ##' @name LeftFit
+##' @param dist Distribution (weibull)
 ##' @export
-setMethod( "LeftFit", "EventData", function( object, time.cut, dist="weibull" ){
-  
+setMethod( "LeftFit", signature=c( object="EventData", time.cut="numeric" ),
+           function( object, time.cut, dist="weibull" ){
   if( !dist %in% c( "weibull" ) ){
      stop( "dist must be weibull")
   }
   
-  if( nrow( object@subject.data ) ==0 ) stop( "Empty data frame!" ) 
+  if( nrow( object@subject.data ) == 0 ) stop( "Empty data frame!" ) 
 
   subject.data <- object@subject.data
   fit.data <- subject.data[ subject.data$time > time.cut, ]
