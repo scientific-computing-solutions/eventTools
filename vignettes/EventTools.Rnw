@@ -36,7 +36,7 @@ library( eventTools )
 @
 
 \section{Estimating the change-point}
-The data used in this vignette is simulated under the assumption of a lag-time. The same approach can, however, be used for other data where there is an effect of non-proportional hazards with a change-point at a specific time (A 2-piecewise model). In the case of a lag-effect, the HR is $1$ until the change-point when treatment starts showing effect. The simulated OS data set is available in the package and we will be used for illustration. It contains $979$ subjects and assumes a lag-time of $165$ days and a post-lag HR of $0.25$. The control median was set to $5.8$ with a shape parameter of $1.2$. The study settings (not the simulated data) can be visualized using the \texttt{nonproportionalHazards} package (for details see the documentation of the package). 
+The data used in this vignette is simulated under the assumption of a lag-time. The same approach can, however, be used for other data where there is an effect of non-proportional hazards with a change-point at a specific time (a 2-piecewise model). In the case of a lag-effect, the HR is $1$ until the change-point when treatment starts showing effect. The simulated OS data set is available in the package and we will be used for illustration. It contains $979$ subjects and assumes a lag-time of $165$ days and a post-lag HR of $0.25$. The control median was set to $5.8$ with a shape parameter of $1.2$. The study settings (not the simulated data) can be visualized using the \texttt{nonproportionalHazards} package (for details see the documentation of the package). 
 <<echo=FALSE, fig=TRUE>>=
 library( nonproportionalHazards)
 study <- delayedResponse( lag.time=5.5, 
