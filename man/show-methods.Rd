@@ -8,6 +8,9 @@
 \usage{
 \S4method{show}{EventModelExtended}(object)
 }
+\arguments{
+\item{object}{EventModelExtended object}
+}
 \description{
 Displays information about EventModelExtended objects
 }

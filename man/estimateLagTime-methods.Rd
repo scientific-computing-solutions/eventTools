@@ -14,6 +14,8 @@ estimateLagTime(object, t.start, t.stop, dt, dist = "exponential",
   dist = "exponential", criterion = "AIC")
 }
 \arguments{
+\item{object}{EventData object}
+
 \item{t.start}{Start time for search interval [Integer, months]}
 
 \item{t.stop}{end time for search interval [Integer, months]}

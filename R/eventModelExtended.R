@@ -7,6 +7,7 @@ NULL
 ##' of an Eventdata object
 ##' @slot model An S3 "weibreg" object
 ##' @slot event.data An EventData object used to fit a Weibull survial model
+##' @slot time.cut The change point
 ##' @slot simParams The \code{FromDataSimParam} object which contains the information
 ##' needed to generate the survial times
 ##' @export
@@ -20,6 +21,7 @@ setClass("EventModelExtended",
 
 ##' Displays information about EventModelExtended objects
 ##' @name show
+##' @param object EventModelExtended object
 ##' @rdname show-methods
 ##' @aliases show,EventModelExtended-method
 ##' @export
@@ -30,13 +32,15 @@ setMethod("show",
 })
 
 
-##' @param units Scale for the x-axis. "Days", "Months" or "Years"
+
+##' Plots the EventModelExtended object
 ##' @name plot
+##' @param ... Additional arguments to be passed to the method
 ##' @rdname plot-methods
 ##' @aliases plot,EventModelExtended,missing-method
 ##' @export
 setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
-  function(x, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
+  function(x, xlab=paste("Time in study [",units,"]",sep=""),
                 ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
       warning( paste0( "This function is not yet defined, please use: ",
                 "plot( right.censored.model, left.truncated.model )" ) )
@@ -44,8 +48,9 @@ setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
 )
 
 
-##' @param units Scale for the x-axis. "Days", "Months" or "Years"
+##' Plots the EventModel,EventModelExtended object
 ##' @name plot
+##' @param units Scale for the x-axis. "Days", "Months" or "Years"
 ##' @rdname plot-methods
 ##' @aliases plot,EventModel,EventModelExtended-method
 ##' @export

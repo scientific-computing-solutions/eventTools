@@ -19,7 +19,6 @@ test_that("validateArgs",{
   expect_error( simulatePW( right.cens.fit, left.trunc.fit, Nsim=-6 ) )
   expect_error( simulatePW( right.cens.fit, left.trunc.fit, Nsim=0 ) )
   expect_error( simulatePW( right.cens.fit, left.trunc.fit, Nsim="sd" ) )
-  expect_error( simulatePW( right.cens.fit, left.trunc.fit, Nsim=10, seed=-1 ) )
   expect_error( expect_warning( simulatePW( right.cens.fit, left.trunc.fit, Nsim="we" ) ) )
   expect_error( simulatePW( simulatePW( left.trunc.fit, right.cens.fit, Nsim=10 ) ) )
   expect_error( simulatePW( my.fit, Nsim=10 ) ) 

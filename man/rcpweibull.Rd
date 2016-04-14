@@ -7,9 +7,11 @@
 rcpweibull(t.conditional, params, HR)
 }
 \arguments{
+\item{t.conditional}{time vector to condition on}
+
 \item{params}{paramter object with study settings}
 
-\item{hr}{HR}
+\item{HR}{HR}
 }
 \description{
 Conditional function for piece wise model

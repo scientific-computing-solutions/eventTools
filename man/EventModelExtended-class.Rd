@@ -16,6 +16,8 @@ of an Eventdata object
 
 \item{\code{event.data}}{An EventData object used to fit a Weibull survial model}
 
+\item{\code{time.cut}}{The change point}
+
 \item{\code{simParams}}{The \code{FromDataSimParam} object which contains the information
 needed to generate the survial times}
 }}

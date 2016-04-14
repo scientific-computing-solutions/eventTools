@@ -8,6 +8,29 @@ simulate.Internal(data, SimParamsRgt, SimParamsLft, time.cut,
   accrualGenerator = NULL, Naccrual = 0, Nsim = 10000, seed = NULL,
   limit = 0.05, longlagsettings = NULL, dropout = NULL)
 }
+\arguments{
+\item{data}{EventData object}
+
+\item{SimParamsRgt}{Fitted KM right censored model}
+
+\item{SimParamsLft}{Fitted left truncated model}
+
+\item{time.cut}{Change point}
+
+\item{accrualGenerator}{accrualGenerator object}
+
+\item{Naccrual}{Number of subjects to recruit}
+
+\item{Nsim}{Number of simulations}
+
+\item{seed}{Random seed}
+
+\item{limit}{Used to set CI limit}
+
+\item{longlagsettings}{LonLagSettings object}
+
+\item{dropout}{Dropout object}
+}
 \description{
 Only used internally
 }

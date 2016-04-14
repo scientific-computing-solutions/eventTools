@@ -14,6 +14,8 @@ simulatePW(object, object2, ...)
 \item{object}{The model fitted on Right censored data}
 
 \item{object2}{The model fittend on Left truncated/Right censored data}
+
+\item{...}{Additional arguments to be passed to the method}
 }
 \description{
 Simulate method for use when predicting from piecewise Weibull

@@ -10,11 +10,11 @@ An S4 class containing an LagTimeEstimate Object
 \section{Slots}{
 
 \describe{
-\item{\code{event.data}}{An EventData object used to fit a Weibull survial model}
+\item{\code{event.data}}{An EventData object used to fit a Weibull survial model.}
+
+\item{\code{times}}{time vector with the values at which XIC was calculated.}
 
 \item{\code{XIC}}{vector of AIC or BIC values of fits at different times.}
-
-\item{\code{estimate.lag.time}}{Estimate of lag time}
 
 \item{\code{criterion}}{AIC or BIC (AIC)}
 }}

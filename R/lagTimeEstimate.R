@@ -1,9 +1,9 @@
 # Functions to estimate the change-point in time when HR is changes
 
 ##' An S4 class containing an LagTimeEstimate Object
-##' @slot event.data An EventData object used to fit a Weibull survial model
+##' @slot event.data An EventData object used to fit a Weibull survial model.
+##' @slot times time vector with the values at which XIC was calculated.
 ##' @slot XIC vector of AIC or BIC values of fits at different times.
-##' @slot estimate.lag.time Estimate of lag time
 ##' @slot criterion AIC or BIC (AIC)
 ##' @export
 setClass("LagTimeEstimate", 
@@ -17,6 +17,7 @@ setClass("LagTimeEstimate",
 ##' @rdname estimateLagTime-methods
 ##' @name estimateLagTimeG
 ##' @title GMethod to estimate lag times
+##' @param object EventData object
 ##' @param t.start Start time for search interval [Integer, months]
 ##' @param t.stop end time for search interval [Integer, months]
 ##' @param dt Time increment for search [Integer, months]
@@ -61,6 +62,9 @@ setMethod( "estimateLagTime",signature=c( "EventData" ),
 
 
 ##' Methods retrieving the optimal value for the lag time
+##' @param object An EventData object 
+##' @param smoothing Whether a spline should be used to connect the points or not
+##' @param ... Additional arguments to be passed to the method
 ##' @rdname getEstimate-methods
 ##' @export
 setGeneric( "getEstimate",
@@ -71,8 +75,6 @@ setGeneric( "getEstimate",
 
 ##' Method returning the optimal value based on AIC or BIC
 ##' @rdname getEstimate-methods
-##' @param object An EventData object 
-##' @param smoothing 
 ##' @export
 setMethod( "getEstimate",signature=c( "LagTimeEstimate" ),
            function( object, smoothing = TRUE, ... ) {
@@ -91,6 +93,13 @@ setMethod( "getEstimate",signature=c( "LagTimeEstimate" ),
 ##' Plot method for LagTimeEstimate objects
 ##' @name plot
 ##' @rdname plot-methods
+##' @param x LagTimeEstimate object
+##' @param y missing
+##' @param xlab X-label titel
+##' @param ylab Y-label titel
+##' @param main Plot titel
+##' @param ylim Y-range
+##' @param xlim X-range 
 ##' @param smoothing If true will add a smoothed line to the curve and use
 ##' that for when retreiving the optimal time value.
 ##' @aliases plot,LagTimeEstimate,missing-method

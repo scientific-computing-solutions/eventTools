@@ -15,8 +15,9 @@ setGeneric( "KMRightCensor", function( object, time.cut )
   standardGeneric("KMRightCensor") )
 
 
-##' @rdname KMRightCensor-methods
-##' @name KMRightCensor
+##' KMRightCensor the Event Data
+##' @param object The EventData object
+##' @param time.cut The time in days when to cut the data
 ##' @export
 setMethod( "KMRightCensor", "EventData", function( object, time.cut ){
   

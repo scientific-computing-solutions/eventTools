@@ -6,11 +6,11 @@
 \alias{plot,EventModel,EventModelExtended-method}
 \alias{plot,EventModelExtended,missing-method}
 \alias{plot,LagTimeEstimate,missing-method}
-\title{Plot method for LagTimeEstimate objects}
+\title{Plots the EventModelExtended object}
 \usage{
-\S4method{plot}{EventModelExtended,missing}(x, units = "Days",
-  xlab = paste("Time in study [", units, "]", sep = ""), ylab = "",
-  main = "", ylim = NULL, xlim = NULL, ...)
+\S4method{plot}{EventModelExtended,missing}(x, xlab = paste("Time in study [",
+  units, "]", sep = ""), ylab = "", main = "", ylim = NULL, xlim = NULL,
+  ...)
 
 \S4method{plot}{EventModel,EventModelExtended}(x, y, units = "Days",
   xlab = paste("Time in study [", units, "]", sep = ""), ylab = "",
@@ -19,14 +19,32 @@
 \S4method{plot}{LagTimeEstimate,missing}(x, smoothing = TRUE, ...)
 }
 \arguments{
+\item{x}{LagTimeEstimate object}
+
+\item{xlab}{X-label titel}
+
+\item{ylab}{Y-label titel}
+
+\item{main}{Plot titel}
+
+\item{ylim}{Y-range}
+
+\item{xlim}{X-range}
+
+\item{...}{Additional arguments to be passed to the method}
+
+\item{y}{missing}
+
 \item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
 
 \item{smoothing}{If true will add a smoothed line to the curve and use
 that for when retreiving the optimal time value.}
-
-\item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
 }
 \description{
+Plots the EventModelExtended object
+
+Plots the EventModel,EventModelExtended object
+
 Plot method for LagTimeEstimate objects
 }
 

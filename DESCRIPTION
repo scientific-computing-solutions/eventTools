@@ -15,7 +15,7 @@ Depends:
     methods,
     scales,
     R (>= 2.10)
-Include: eventPrediction
+Imports: eventPrediction
 Suggests:
     knitr,
     testthat

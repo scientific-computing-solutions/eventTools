@@ -13,7 +13,9 @@ getEstimate(object, smoothing = TRUE, ...)
 \arguments{
 \item{object}{An EventData object}
 
-\item{smoothing}{}
+\item{smoothing}{Whether a spline should be used to connect the points or not}
+
+\item{...}{Additional arguments to be passed to the method}
 }
 \description{
 Methods retrieving the optimal value for the lag time

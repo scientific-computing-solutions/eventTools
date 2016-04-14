@@ -1,6 +1,7 @@
-##' Conditional function for piece wise model 
+##' Conditional function for piece wise model
+##' @param t.conditional time vector to condition on  
 ##' @param params paramter object with study settings
-##' @param hr HR
+##' @param HR HR
 rcpweibull <- function( t.conditional, params, HR ) {
   params <- as.list( params )
   
@@ -39,6 +40,7 @@ rcpweibull <- function( t.conditional, params, HR ) {
 ##' Simulate method for use when predicting from piecewise Weibull
 ##' @param object The model fitted on Right censored data
 ##' @param object2 The model fittend on Left truncated/Right censored data
+##' @param ... Additional arguments to be passed to the method
 ##' @rdname simulatePW-methods
 ##' @export 
 setGeneric( "simulatePW",
@@ -61,6 +63,17 @@ setMethod( "simulatePW",signature=c( "EventModel", "EventModelExtended" ),
 })
 
 ##' Only used internally
+##' @param data EventData object 
+##' @param SimParamsRgt Fitted KM right censored model
+##' @param SimParamsLft Fitted left truncated model
+##' @param time.cut Change point
+##' @param accrualGenerator accrualGenerator object
+##' @param Naccrual Number of subjects to recruit
+##' @param Nsim Number of simulations
+##' @param seed Random seed
+##' @param limit Used to set CI limit
+##' @param longlagsettings LonLagSettings object
+##' @param dropout Dropout object 
 simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut, 
                                accrualGenerator=NULL,Naccrual=0, Nsim=1e4, 
                                seed=NULL, limit=0.05, 
