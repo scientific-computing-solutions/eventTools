@@ -62,6 +62,7 @@ setMethod( "LeftFit", signature=c( object="EventData", time.cut="numeric" ),
     # Just for consistency with survreg
     sigma[2] <- -sigma[2]
     sigma[3] <- -sigma[3]
+    
     new( "EventModelExtended",
          model=list( model ),
          event.data=object,
