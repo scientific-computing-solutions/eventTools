@@ -34,11 +34,9 @@ setMethod("show",
 
 
 ##' Plots the EventModelExtended object
-##' @name plot
-##' @param ... Additional arguments to be passed to the method
 ##' @rdname plot-methods
 ##' @aliases plot,EventModelExtended,missing-method
-##' @export
+##' @param ... Additional arguments to be passed to the method
 setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
   function(x, xlab=paste("Time in study [",units,"]",sep=""),
                 ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
@@ -49,11 +47,10 @@ setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
 
 
 ##' Plots the EventModel,EventModelExtended object
-##' @name plot
-##' @param units Scale for the x-axis. "Days", "Months" or "Years"
 ##' @rdname plot-methods
+##' @param units Scale for the x-axis. "Days", "Months" or "Years"
+##' @param ... Additional arguments to be passed to the method
 ##' @aliases plot,EventModel,EventModelExtended-method
-##' @export
 ## Basically joins the curves where the right-cens model ends. Are there otherways to do this?
 setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
  function( x, y, units="Days", xlab=paste("Time in study [",units,"]",sep=""),

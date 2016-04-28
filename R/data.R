@@ -21,3 +21,25 @@
 ##' @examples
 ##' data(lag.data)
 NULL
+
+##' A simulated clinical trial with 2000 patients. No lag time. 
+##' HR=0.5, Control median=5.8. Survival function Weibull with shape 2. 
+##' No dropouts. Linear recruitment. 
+##'
+##' @name mix.data
+##'
+##' @format A data frame with 2000 rows and 8 variables:
+##' \describe{
+##'   \item{subject}{Subject identifier}
+##'   \item{randDate}{Randomization date}
+##'   \item{eventDate}{Event date}
+##'   \item{time}{Not used, NA.}
+##'   \item{hasEvent}{Whether subject has had event or not}
+##'   \item{lastDate}{Last date}
+##'   \item{withdrawn}{If subject has withdrawn or not.}
+##'   \item{eventType}{Type of event}
+##' }
+##' 
+##' @examples
+##' data(mix.data)
+NULL
