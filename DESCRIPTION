@@ -10,12 +10,14 @@ Description: This package adds additional extensions to the event prediction
 License: GPL (>=2)
 Depends:
     ggplot2,
+    lattice,
     survival,
     eha,
     methods,
     scales,
     R (>= 2.10)
-Imports: eventPrediction
+Imports:
+    eventPrediction
 Suggests:
     knitr,
     testthat
