@@ -19,7 +19,7 @@
 \S4method{plot}{LagTimeEstimate,missing}(x, smoothing = TRUE, ...)
 }
 \arguments{
-\item{x}{LagTimeEstimate object}
+\item{x}{EventModel, EventModelExtended or LagTimeEstimate}
 
 \item{xlab}{X-label titel}
 
@@ -33,7 +33,7 @@
 
 \item{...}{Additional arguments to be passed to the method}
 
-\item{y}{missing}
+\item{y}{missing or EventModelExtended}
 
 \item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
 

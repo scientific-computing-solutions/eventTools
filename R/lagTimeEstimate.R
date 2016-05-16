@@ -93,8 +93,8 @@ setMethod( "getEstimate",signature=c( "LagTimeEstimate" ),
 ##' Plot method for LagTimeEstimate objects
 ##' @name plot
 ##' @rdname plot-methods
-##' @param x LagTimeEstimate object
-##' @param y missing
+##' @param x EventModel, EventModelExtended or LagTimeEstimate 
+##' @param y missing or EventModelExtended
 ##' @param xlab X-label titel
 ##' @param ylab Y-label titel
 ##' @param main Plot titel
@@ -117,12 +117,14 @@ setMethod( "plot",
      }
      { NULL }
      
-     plot( x@times, x@XIC, type="l", col="red", main=main, 
+     plot( x@times, x@XIC, type="l", col="black", main=main, 
            xlab="Time [Days]", ylab=x@criterion,... )
-     if( !is.null( my.smooth)  ){
-       lines( my.smooth$x, my.smooth$y, col="brown", lwd=2 )
-     }
      abline( v=getEstimate(x), col="black", lty=2 )
+     if( !is.null( my.smooth)  ){
+       lines( my.smooth$x, my.smooth$y, col="darkgreen", lwd=2 )
+       legend( "topright", c( "Smoothed", "Values" ), col=c( "darkgreen", "black" ), lty=c(1,1) )
+     }
+
    }
 )
 

@@ -59,6 +59,7 @@ setMethod( "simulatePW",signature=c( "EventModel", "EventModelExtended" ),
         object2@simParams@type != "weibull" ){
       stop( "Only weibull is currenlty allowed for the piecewise simulation!")
     }
+    checkValidTimeCut(  object, object2 )
   simulate.Internal( object2@event.data, object@simParams, object2@simParams, object2@time.cut, ... )
 })
 
@@ -86,7 +87,7 @@ simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut,
   eventPrediction:::validate.simulate.arguments(accrualGenerator,Naccrual,Nsim,seed,
                               limit,longlagsettings,HR,r,data)  
 
-
+  if( time.cut < 0 ){ stop( "Negative change point!" ) }
   #calculate the dropout rate and shape for drop out
   dropoutctrlSpec <- eventPrediction:::CtrlSpecFromList(dropout,eventtext="",1)[[1]]
   dropout.shape <- if(is.null(dropout) || is.null(dropout$shape)) 1 else dropout$shape

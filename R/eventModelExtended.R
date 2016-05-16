@@ -46,6 +46,9 @@ setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
 )
 
 
+
+
+
 ##' Plots the EventModel,EventModelExtended object
 ##' @rdname plot-methods
 ##' @param units Scale for the x-axis. "Days", "Months" or "Years"
@@ -55,8 +58,10 @@ setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
 setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
  function( x, y, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
            ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
-   xscale <- eventPrediction:::GetScaleForKM(units,daysinyear)
    daysinyear <- standarddaysinyear()
+   xscale <- eventPrediction:::GetScaleForKM(units,daysinyear)
+
+   checkValidTimeCut( x, y )
    
    KM <- survfit(Surv( time, has.event) ~ 1, data=y@event.data@subject.data,...)
    
@@ -78,7 +83,7 @@ setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
    # Connect start point of left-truncated curve with 
    # the end of the right-censored curve
    y.new <- y.new - y.new[ 1 ] + y.end.right.cens
-   lines( xx, y.new, lwd=3, col="orange" )
+   lines( xx/xscale, y.new, lwd=3, col="darkgreen" )
    
    y.right <- seq(.99,.01,by=-.01)
    right.model <- predict(x@model, type="quantile", p=rev(y.right))[1,]/xscale
@@ -86,7 +91,7 @@ setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
    lines( right.model[idx], y.right[idx], col="blue", type="l", lwd=3 )
    abline( v = y@time.cut, lty=3 )
    pos <- if(is.null(xlim)) 0.75*max(KM$time/xscale) else xlim[1] + 0.75*(xlim[2]-xlim[1])
-   legend( pos, 1, c( "Data", "Model" ), col=c( "red", "orange" ), lty=c(1,1) )
+   legend( pos, 1, c( "Data", "Model (right)", "Model (left)" ), col=c( "red", "blue", "darkgreen" ), lty=c(1,1) )
  }
 )
 
