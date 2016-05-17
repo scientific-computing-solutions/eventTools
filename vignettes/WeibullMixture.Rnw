@@ -4,12 +4,12 @@
 \usepackage{hyperref}
 \usepackage{fullpage}
 \usepackage[firstpage]{draftwatermark}
-\title{EventTools: Weibull mixture}
+\title{EventTools (v2.0): Weibull mixture (2 subgroups)}
 \author{Daniel Dalevi}
 % \VignetteIndexEntry{Predict from data - Basic tutorial}
 %\VignetteEngine{knitr::knitr} 
 
-\SetWatermarkText{DRAFT: FOR COMMENTS}
+\SetWatermarkText{DRAFT: FOR DISCUSSION}
 \SetWatermarkLightness{0.75}
 \SetWatermarkScale{2}
 
@@ -26,7 +26,9 @@ concordance=TRUE
 \maketitle
 
 \section{Introduction}
-The eventTools package contains some extensions of functionality for the eventPrediction package. It will use the same interface when possible and the idea is to mimic the command-sequences used and propagate the functionality (accrual processes, dropouts etc) as far as possible. The aim in this vignette is to demonstrate how to fit a mixture model and use that for predictions. Jags will be used underneath for fitting a Bayesian MCMC model. Users will need to provide intial parameters and some boundaries on priors based on (protocol) assumptions.   
+The eventTools package contains some extensions of functionality for the eventPrediction package. It will use the same interface when possible and the idea is to mimic the command-sequences used and propagate the functionality (accrual processes, dropouts etc) as far as possible. The aim in this vignette is to demonstrate how to fit a mixture model on blinded data and use that for predictions (available in versions $\ge 2.0$). The jags and runjags packages will be used underneath for fitting a Bayesian MCMC model. Users will need to provide initial parameters and some boundaries on priors based on (protocol) assumptions.
+
+A mixture model is expected to be superior over fitting a single Weibull on blinded data when having subgroups of very different event rates, perhaps as a result of a good treatment effect (low HR, somewhere below $0.1$). In these cases, however, little is information is available about the group with the lower event rate early in the trial. It is first when having subjects with a longer exposure time that we can expect a model to accurately estimate both rates. This may happen in real oncology trials at a high maturity why it is unclear how useful these models will be early in studies.  
 
 \section{Preliminary steps}
 Before starting this tutorial you will need to install the eventPrediction and the eventTools packages and their dependencies. For all examples below, ensure you load the libraries first. 
@@ -42,8 +44,10 @@ The model we will estimate is a mixture of two Weibull survival functions.
 \end{equation}
 where $\pi$ is the mixture coefficient. 
 
-The data used in this vignette is simulated with $2000$ subjects equally allocated to treatment and control under a hazard ratio of $0.5$ and a control median of $5.8$. A Weibull model with shape parameter $2$ was used to generate the data. The parameters will correspond to a control Weibull scale of $212$ and an experimental scale of $300$. The simulated OS data set is available in the package \texttt{mix.data} and we will be used for illustration. 
-The dataset is loaded into R and an EventData object is created. The time is calculated from the event date and the last date.
+A simulated OS dataset will be used in this vignette which contains $2000$ subjects equally allocated to treatment and control. The event rates are assumed to follow a Weibull model with shape parameter $1.2$, a control median of $2$ and a hazard ratio of $0.1$. The parameters will correspond to a Weibull scale parameter of $83$ in the control arm and $563$ in the experimental arm. The parameterization of the Weibull is the same as in the \texttt{eventPrediciton} package, see the \emph{Predict from Data} vignette. The dataset is called \texttt{mix.data} and is available in the package . 
+
+The dataset is loaded into R and an EventData object is created. The time is calculated from the event date and the last date (See the \emph{Predict from data} vignette in the \texttt{eventPrediction} package).
+
 
 <<data, cache=TRUE>>=
 data( mix.data )
@@ -57,65 +61,89 @@ my.data <- EventData( data=mix.data,
                                  last.date="lastDate" ) )
 @
 
-Some prior information and initial values need to be provided for the Bayesian MCMC model. The shape parameter will be assumed to be uniformly distributed within $[\alpha_{low},\alpha_{high}]$. The initial value of the shape parameter will be set to $1.2$ (which is a bit away from the true value of $2$). Since we know that the randomization balance is $1:1$ we will use this information and set a tight interval around $0.5$ for the mixture coefficient, which is also assumed to be uniformly distributed. This condition can be relaxed for other situations where we do not know the size of the subgroups. An assumed control median and a hazard ratio is also needed to calculate prior scale parameters. The logarithm of the scales will have a gaussian prior with means equal to the log of the prior scale parameters and a standard deviation of $d_i$, $i=1,2$ where $d_i$ is uniformly distributed between $[sd_{min},sd_{max}]$. The initial values of the scale will also be based on these but with adding some random noise to it.
+The agreement between a single Weibull and the data can be visualized (as usual) using the eventPrediction package. 
 
-<<prior, cache=TRUE, dependson="data">>=
+<<eventpredfit, fig=TRUE>>=
+plot( fit( my.data ) ) 
+@
+
+It is well known that a single Weibull may have problems capture the trends in the data when having very different event rates in the two arms (or subgroups). In this case, having a HR$=0.1$ we can see that the fit between model and data is poor. 
+
+In order to fit a mixture model to this data, the eventTools package will need some prior information and initial values. These may be based on protocol assumptions and/or available historical data.
+
+The shape parameter will be assumed to be uniformly distributed within $[\alpha_{low},\alpha_{high}]$ and will also need an initial value ($1.2$). Since we know that the randomization balance is $1:1$ we will use this information and set a tight interval around $0.5$ for the mixture coefficient (\texttt{mixture.min}, \texttt{mixture.max}), which is also assumed to be uniformly distributed. This condition can be relaxed for other situations where we do not know the size of the subgroups. An assumed control median and a hazard ratio is also needed to calculate prior scale parameters. The logarithm of the scales will have a Gaussian prior with means equal to the log of the prior scale parameters and a standard deviation of $d_i$, $i=1,2$ where $d_i$ is uniformly distributed between $[sd_{min},sd_{max}]$. The initial values of the scale will also be based on these but with adding some random noise to it.
+
+<<priorandinit, cache=TRUE, dependson=c("data")>>=
 prior.and.inits <- PriorAndInitValues( shape.init=1.2, 
                                        shape.min=0.5,
                                        shape.max=4,
-                                       ctrl.median=5,
-                                       hr=0.6,                        
+                                       ctrl.median=3,
+                                       hr=0.2,                        
                                        mixture.min=0.499,
-                                       mixture.max=0.501 )
+                                       mixture.max=0.501,
+                                       scale.sd.min = 0.9,
+                                       scale.sd.max = 1.1 )
 @
 
-When fitting the model we need to provide the MCMC algorithm in Jags with some search information. The number of burnin samples (\texttt{N.burnin}) specifies how many iterations should be disregarded before starting sampling (there is also an initial model adaption period before this of 1000 iterations). \texttt{N.samples} specifies the number of samples we take and this will also be used in the prediction step where we run one simulation per sample. The thinning parameter tells how many samples to skip which can be used to avoid autocorrelation. Then we also set the seed for reproducibility. In this case we will only use a single chain but these can be specified with \texttt{N.chains} and it is also possible to run chains on different processors (see Help documentation).
-<<fitting, cache=TRUE, dependson=c("data", "prior")>>=
+When fitting the model we need to provide the MCMC algorithm in Jags with some search information. The number of burnin samples (\texttt{N.burnin}) specifies how many iterations should be disregarded before starting sampling (there is also an initial model adaption period before this of 1000 iterations). \texttt{N.samples} specifies the number of samples we take and this will also be used in the prediction step where we run one simulation per sample. The thinning parameter tells how many samples to skip which can be used to avoid autocorrelation. Then we also set the seed for reproducibility. In this case we will only use a single chain but these can be specified with \texttt{N.chains} and it is also possible to run chains on several processors (see Help documentation).
+
+<<fitting, cache=TRUE, dependson=c("data","priorandinit")>>=
 my.fit <- BayesianMixtureFit( my.data, 
                               prior.and.inits,
-                              N.burnin=500,
-                              N.samples=1000,
+                              N.burnin=200,
+                              N.samples=500,
                               N.thin=1,
                               seed=20160427 )
 @
 
 The traceplots show the values the parameters took during the sampling. 
-<<>>=
+<<traceplot>>=
 tracePlot( my.fit )
 @
 
 The marginal densities for each parameter can also be plotted. 
 
-<<>>=
+<<densityplot>>=
 densityPlot( my.fit )
 @
 
-The median is shown in red and the point corresponding to the maximum value in grey. The median will be used as a point estimate for the parameters when plotting the survival curve (see below). The true values of the scale parameters should be $212$ and $300$ and $2.0$ for the shape parameter.  We are a little off but not that far. Both the tracePlot and densityPlots should be inspected to see that we get a clear separation between the two scale parameters. Sometimes the scale parameters may result in two peaks which will result (one at the control and one at the active arm) which will result in a badly fit survival curve.
+In both plots $p$ is the mixture coefficient. The median is shown in red and the point corresponding to the maximum value in grey. The median will be used as a point estimate for the parameters when plotting the survival curve (see below). The true values of the scale parameters should be $83$ and $563$ and $1.2$ for the shape parameter.  Both the tracePlot and densityPlots should be inspected to see that we get a clear separation between the two scale parameters. Sometimes both scale parameters will have two peaks (one at the control and one at the active arm) which will result in a badly fit survival curve. Other times one of the scale parameters is close to zero which may happen when having too low subject time at risk.  
 
 Some additional information is provided by the objects show method.
 <<>>=
 my.fit
 @
 
-You can also plot the model and the KM curve of the data. 
-<<>>=
+You can also plot the agreement between the model and the KM curve. 
+<<mixfitplot>>=
 plot( my.fit )
 @
+There is a remarkable improvement of the fitted curve. 
 
 \section{Prediction}
-Then to make predictions you simply use the same steps as in the event prediction package, with one difference, you do not specify the number of simulations. These will be the same as the number of samples in the fit of the model (\texttt{N.samples}). The prediction algorithm works by iterating over the $N$ MCMC samples: 
-For $i=1 \cdots N$.
+Then to make predictions you simply use the same steps as in the event prediction package, with one difference, you do not specify the number of simulations. These will be the same as the number of samples in the fit of the model (\texttt{N.samples}). The prediction algorithm works by iterating over the $N$ MCMC samples of the parameters: 
+For $i=1 \dotso N$.
 \begin{enumerate}
 \item Assign each subject to either of the subgroups ($1$ or $2$) based on sample $i$. In this example it will correspond to control and active. 
 \item Simulate event times (conditioned on time in study), for ongoing subjects, from either $S_1 (t;\alpha_i,\beta_{1,i})$ or $ S_2(t;\alpha_i,\beta_{1,i})$ depending on the subgroup assignment. 
 \end{enumerate}
 
-<<>>=
+Event predictions are performed using the \texttt{SimulateMixW} function and to find the predicted target reaching of $1850$ events, use: 
+<<eventpredmix, cache=TRUE, dependson=c("data","priorandinit","fitting")>>=
 results <- SimulateMixW( my.fit )
-results <- predict( results, event.pred=1800 )
+results <- predict( results, event.pred=1850 )
 plot( results, show.title=TRUE )
 @
-The actual data for when reaching $1800$ events in this simulation is $2018-03-16$.
+
+Although the new model much better capture the shape of the KM curve, there is a little difference compared to a single Weibull. 
+<<eventpredold>>=
+results <- predict( simulate( fit( my.data ), seed=20160427 ), 
+                    event.pred=1850 )
+plot( results, show.title=TRUE )
+@
+
+This is because the single Weibull model captures the tail of the curve reasonably (See Figure~\ref{fig:eventpredfit}) and since most subjects already have large enough time-exposure, this counts more than the middle parts of the curve. For other datasets this may not be true. For example, the lag data set (also available in the package, \texttt{lag.data}) result in better predictions using the mixture model. The lag dataset is a bit trickier to fit but one may experience a bit with the input parameters until getting a clear separation of the scale parameters.  
+
 
 \section{Future work}
 The current approach can only deal with two subgroups. Sometimes there are reasons to believe we have more than two subgroups and the current approach can be extended for those situations. It is not clear how well the estimation will work. Then there is also the possibility to extend for lag-periods.

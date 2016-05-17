@@ -1,6 +1,40 @@
 ##' @importFrom eventPrediction FromDataParam
 NULL
 
+##' An S4 class containing a fitted survival model obtained from JAGS
+##' of an Eventdata object
+##' @slot shape.init Initial value for shape parameter.
+##' @slot shape.min The shape parameter prior is uniformly distributed between 
+##' [shape.min, shape.max]. 
+##' @slot shape.max The shape parameter prior is uniformly distributed between 
+##' [shape.min, shape.max]. 
+##' @slot ctrl.median Control median [months]
+##' @slot hr Hazard ratio
+##' @slot mixture.min The minimum mixture coefficient, e.g. randomization 
+##' balance (boundary of uniform distribution), prior is uniformly distributed between 
+##' [mixture.min, mixture.max]
+##' @slot mixture.max The maximum mixture coefficient, e.g. randomization 
+##' balance (boundary of uniform distribution), prior is uniformly distributed between 
+##' [mixture.min, mixture.max]
+##' @slot scale.sd.min The minimum standard deviation of the log(scale) (0.5), 
+##' prior is uniformly distributed between [scale.sd.min, scale.sd.max]
+##' @slot scale.sd.max The maximum standard deviation of the log(scale) (2), 
+##' prior is uniformly distributed between [scale.sd.min, scale.sd.max]
+##' @export
+setClass( "PriorAndInitsMixture",
+          slots = list( shape.init="numeric",
+                        shape.min="numeric",
+                        shape.max="numeric",
+                        ctrl.median="numeric",
+                        hr="numeric",                        
+                        mixture.min="numeric",
+                        mixture.max="numeric",
+                        scale.sd.min="numeric",
+                        scale.sd.max="numeric"
+          )
+)
+
+
 ##' BayesianMixtureFit of the Event Data
 ##' 
 ##' Creates an EventModel based on the fitting a Bayesian MCMC mixture model using
@@ -92,8 +126,10 @@ setMethod( "BayesianMixtureFit",
     my.model <- paste0( my.model,
     "shape ~ dunif( ", prior.init@shape.min ,",", prior.init@shape.max , ")\n",
     "p ~ dunif( ", prior.init@mixture.min, ", ", prior.init@mixture.max, " )\n",
-    "log.scale[1] ~ dnorm( log(", ctrl.rate , "),1)\n", 
-    "log.scale[2] ~ dnorm( log(", exp.rate, "),1)\n",
+    "log.scale[1] ~ dnorm( log(", ctrl.rate , "), sd1 )\n", 
+    "log.scale[2] ~ dnorm( log(", exp.rate, "), sd2 )\n",
+    "sd1 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n",
+    "sd2 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n", 
     "for( k in 1:2 ) {\n",
     "  lambda[k] <- pow( scale[k], -shape )\n", 
     "  scale[k] <- exp( log.scale[k] )\n",
@@ -104,8 +140,6 @@ setMethod( "BayesianMixtureFit",
   jags.init <- rep( NA, length( times.na ) )
   jags.init[ censored ] <- times.cens[ censored ] + 1
   
-#  "sd1 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n","), sd1 )\n",
-#  "sd2 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n", sd2 )\n",
   shape <- exp( log( prior.init@shape.min ) + log( prior.init@shape.max ) )
   jags.inits <- function() {
     list( 'shape' = shape, 
@@ -179,39 +213,6 @@ setMethod( "BayesianMixtureFit",
 
 
 
-##' An S4 class containing a fitted survival model obtained from JAGS
-##' of an Eventdata object
-##' @slot shape.init Initial value for shape parameter.
-##' @slot shape.min The shape parameter prior is uniformly distributed between 
-##' [shape.min, shape.max]. 
-##' @slot shape.max The shape parameter prior is uniformly distributed between 
-##' [shape.min, shape.max]. 
-##' @slot ctrl.median Control median [months]
-##' @slot hr Hazard ratio
-##' @slot mixture.min The minimum mixture coefficient, e.g. randomization 
-##' balance (boundary of uniform distribution), prior is uniformly distributed between 
-##' [mixture.min, mixture.max]
-##' @slot mixture.max The maximum mixture coefficient, e.g. randomization 
-##' balance (boundary of uniform distribution), prior is uniformly distributed between 
-##' [mixture.min, mixture.max]
-##' @slot scale.sd.min The minimum standard deviation of the log(scale) (0.5), 
-##' prior is uniformly distributed between [scale.sd.min, scale.sd.max]
-##' @slot scale.sd.max The maximum standard deviation of the log(scale) (2), 
-##' prior is uniformly distributed between [scale.sd.min, scale.sd.max]
-##' @export
-setClass( "PriorAndInitsMixture",
-          slots = list( shape.init="numeric",
-                        shape.min="numeric",
-                        shape.max="numeric",
-                        ctrl.median="numeric",
-                        hr="numeric",                        
-                        mixture.min="numeric",
-                        mixture.max="numeric",
-                        scale.sd.min="numeric",
-                        scale.sd.max="numeric"
-                        )
-)
-
 
 ##' PriorAndInitsMixture constructor 
 ##' 
@@ -241,8 +242,8 @@ PriorAndInitValues <- function( shape.init,
                                 hr,                        
                                 mixture.min,
                                 mixture.max,
-                                scale.sd.min = 0.99,
-                                scale.sd.max = 1.01 ){
+                                scale.sd.min = 0.9,
+                                scale.sd.max = 1.1 ){
   if( shape.min > shape.max || shape.min < 0 ) stop( "Invalid range of shape-parameter!" )
   if( mixture.min > mixture.max || mixture.min < 0 ) stop( "Invalid range of mixture-coefficient!" )
   if( ctrl.median < 0 ) stop( "Invalid control median!" )

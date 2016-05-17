@@ -57,6 +57,7 @@ setMethod("show",
 ##' Plots the EventModelBayesian object
 ##' @rdname plot-methods
 ##' @aliases plot,EventModelBayesian,missing-method
+##' @export
 setMethod( "plot", signature( x="EventModelBayesian", y="missing" ),
   function(x, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
                 ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
