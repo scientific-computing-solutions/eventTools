@@ -1,5 +1,5 @@
 # This file contains the public functions associated with
-# the fitted Weibull/loglogistic model for the predict from data simulations  
+# the fitted Weibull/loglogistic model for the predict from data simulatisons  
 ##' @import eventPrediction methods
 NULL
 
@@ -33,6 +33,12 @@ setMethod("show",
 
 
 ##' Help-function to get a segment for plotting
+##' @param x.start x start coordinate
+##' @param x.end x end coordinate
+##' @param y.start y start coordinate
+##' @param npts number of points
+##' @param shape Weibull shape parameter
+##' @param scale Weibull scale parameter
 getSegment <- function( x.start, x.end, y.start, npts, shape, scale ){
   xx <- seq( x.start, x.end, length = npts )
   yy <- pweibull( xx,   # Make sure curve starts where left curve ends.
@@ -44,6 +50,9 @@ getSegment <- function( x.start, x.end, y.start, npts, shape, scale ){
 }
 
 ##' Help-function that plots a segment
+##' @param seg segment to plot
+##' @param col colour 
+##' @param xscale scale for x-axis
 plotSegment <- function( seg, col, xscale ){
   lines( seg$x/xscale, seg$y, lwd=3, col=col )
   abline( v = max( seg$x ), lty=3 )
@@ -88,7 +97,7 @@ setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
    
    subject.data.2 <- y@event.data@subject.data
    chP1 <- y@time.cut
-   chP2 <- max( subject.data.2$time )
+   chP2 <- max( subject.data.2$time, na.rm=T )
 
    ## Piece 1 
    p1 <- getSegment( x.start=0, 
@@ -127,7 +136,7 @@ setMethod( "plot", signature( x="EventModel", y="list" ),
                      ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
              
              # Check that all entries in list are eventModelExtended
-             if( !all( sapply( y, function(i) class( i )[1]=="EventModelExtended" ) ) ){
+             if( !all( sapply( y, function( i ) class( i ) == "EventModelExtended" ) ) ){
                stop( "All elements in list y need to be of class EventModelExtended" )
              }
              
@@ -139,11 +148,11 @@ setMethod( "plot", signature( x="EventModel", y="list" ),
              N.seg <- length(x.models)
              # Change points including boarders
              chPoints <- c( 0,  
-                            sapply( 2:length(x.models), function(i) x.models[[i]]@time.cut ),
+                            sapply( 2:N.seg, function(i) x.models[[i]]@time.cut ),
                             max( x.models[[ N.seg ]]@event.data@subject.data$time ) ) 
              
              
-             for( i in 1:( length( x.models ) - 1 ) ) {
+             for( i in 1:( N.seg - 1 ) ) {
                checkValidTimeCut( x.models[[i]], x.models[[i+1]] )
              }
              

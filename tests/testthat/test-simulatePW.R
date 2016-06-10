@@ -101,9 +101,10 @@ test_that("deterministic_bits",{
 test_that("conditional_function",{
  params <- list( rate = log(2)/3,
                  shape = 2, 
-                 rate.lft = log(2)/3,
-                 shape.lft = 2, 
-                 time.cut=12.01 )
+                 rate.lft.1 = log(2)/3,
+                 shape.lft.1 = 2, 
+                 time.cut=12.01, 
+                 N=1 )
  t.conditional <- seq( 1, 12, 1 )
  
  # Test that times generated before cut-point equals rcweibull

@@ -9,7 +9,7 @@
 % \VignetteIndexEntry{Predict from data - Basic tutorial}
 %\VignetteEngine{knitr::knitr} 
 
-\SetWatermarkText{DRAFT: FOR DISCUSSION}
+\SetWatermarkText{!CODE NOT FULLY REVIEWED!}
 \SetWatermarkLightness{0.75}
 \SetWatermarkScale{2}
 
@@ -49,7 +49,7 @@ A simulated OS dataset will be used in this vignette which contains $2000$ subje
 The dataset is loaded into R and an EventData object is created. The time is calculated from the event date and the last date (See the \emph{Predict from data} vignette in the \texttt{eventPrediction} package).
 
 
-<<data, cache=TRUE>>=
+<<data>>=
 data( mix.data )
    
 my.data <- EventData( data=mix.data,
@@ -73,7 +73,7 @@ In order to fit a mixture model to this data, the eventTools package will need s
 
 The shape parameter will be assumed to be uniformly distributed within $[\alpha_{low},\alpha_{high}]$ and will also need an initial value ($1.2$). Since we know that the randomization balance is $1:1$ we will use this information and set a tight interval around $0.5$ for the mixture coefficient (\texttt{mixture.min}, \texttt{mixture.max}), which is also assumed to be uniformly distributed. This condition can be relaxed for other situations where we do not know the size of the subgroups. An assumed control median and a hazard ratio is also needed to calculate prior scale parameters. The logarithm of the scales will have a Gaussian prior with means equal to the log of the prior scale parameters and a standard deviation of $d_i$, $i=1,2$ where $d_i$ is uniformly distributed between $[sd_{min},sd_{max}]$. The initial values of the scale will also be based on these but with adding some random noise to it.
 
-<<priorandinit, cache=TRUE, dependson=c("data")>>=
+<<priorandinit>>=
 prior.and.inits <- PriorAndInitValues( shape.init=1.2, 
                                        shape.min=0.5,
                                        shape.max=4,
@@ -87,7 +87,7 @@ prior.and.inits <- PriorAndInitValues( shape.init=1.2,
 
 When fitting the model we need to provide the MCMC algorithm in Jags with some search information. The number of burnin samples (\texttt{N.burnin}) specifies how many iterations should be disregarded before starting sampling (there is also an initial model adaption period before this of 1000 iterations). \texttt{N.samples} specifies the number of samples we take and this will also be used in the prediction step where we run one simulation per sample. The thinning parameter tells how many samples to skip which can be used to avoid autocorrelation. Then we also set the seed for reproducibility. In this case we will only use a single chain but these can be specified with \texttt{N.chains} and it is also possible to run chains on several processors (see Help documentation).
 
-<<fitting, cache=TRUE, dependson=c("data","priorandinit")>>=
+<<fitting)>>=
 my.fit <- BayesianMixtureFit( my.data, 
                               prior.and.inits,
                               N.burnin=200,
@@ -109,9 +109,9 @@ densityPlot( my.fit )
 
 In both plots $p$ is the mixture coefficient. The median is shown in red and the point corresponding to the maximum value in grey. The median will be used as a point estimate for the parameters when plotting the survival curve (see below). The true values of the scale parameters should be $83$ and $563$ and $1.2$ for the shape parameter.  Both the tracePlot and densityPlots should be inspected to see that we get a clear separation between the two scale parameters. Sometimes both scale parameters will have two peaks (one at the control and one at the active arm) which will result in a badly fit survival curve. Other times one of the scale parameters is close to zero which may happen when having too low subject time at risk.  
 
-Some additional information is provided by the objects show method.
+Some additional information is provided by the objects print/show method.
 <<>>=
-my.fit
+print( my.fit )
 @
 
 You can also plot the agreement between the model and the KM curve. 
@@ -129,7 +129,7 @@ For $i=1 \dotso N$.
 \end{enumerate}
 
 Event predictions are performed using the \texttt{SimulateMixW} function and to find the predicted target reaching of $1850$ events, use: 
-<<eventpredmix, cache=TRUE, dependson=c("data","priorandinit","fitting")>>=
+<<eventpredmix>>=
 results <- SimulateMixW( my.fit )
 results <- predict( results, event.pred=1850 )
 plot( results, show.title=TRUE )
@@ -142,7 +142,7 @@ results <- predict( simulate( fit( my.data ), seed=20160427 ),
 plot( results, show.title=TRUE )
 @
 
-This is because the single Weibull model captures the tail of the curve reasonably (See Figure~\ref{fig:eventpredfit}) and since most subjects already have large enough time-exposure, this counts more than the middle parts of the curve. For other datasets this may not be true. For example, the lag data set (also available in the package, \texttt{lag.data}) result in better predictions using the mixture model. The lag dataset is a bit trickier to fit but one may experience a bit with the input parameters until getting a clear separation of the scale parameters.  
+This is because the single Weibull model captures the tail of the curve reasonably and since most subjects already have large enough time-exposure, this counts more than the middle parts of the curve. For other datasets this may not be true. For example, the lag data set (also available in the package, \texttt{lag.data}) result in better predictions using the mixture model. The lag dataset is a bit trickier to fit but one may experience a bit with the input parameters until getting a clear separation of the scale parameters.  
 
 
 \section{Future work}

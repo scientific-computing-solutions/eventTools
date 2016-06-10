@@ -103,12 +103,33 @@ setMethod( "simulatePW",signature=c( "EventModel", "list" ),
            })
 
 
+CalculateAccrualTimes <- function(Naccrual,Nsim,rand.dates,accrualGenerator){
+  rs <-t(replicate(Nsim,rand.dates,simplify = "matrix"))
+  if(length(rand.dates)==1) rs <- matrix(rs,nrow=Nsim)
+  
+  if(Naccrual==0){
+    return(rs)
+  }
+  
+  newrecs <- if(Naccrual==1) matrix(replicate(Nsim, accrualGenerator@f(Naccrual)),ncol=1)
+  else t(replicate(Nsim, accrualGenerator@f(Naccrual)))
+  
+  if(length(rand.dates)==0) return(newrecs)
+  
+  if(min(newrecs) < max(rand.dates)){
+    warning("Some new recruited subjects have rand.date earlier than some existing subjects")
+  }
+  
+  return(cbind(rs,newrecs))
+}
+
+
 
 ##' Only used internally
 ##' @param data EventData object 
 ##' @param SimParamsRgt Parameters for fitted KM right censored model
 ##' @param SimParamsList List of parameters for Fitted left truncated model
-##' @param timeCutList ;ist of change points, should equal length of SimParamsList
+##' @param timeCutList List of change points, should equal length of SimParamsList
 ##' @param accrualGenerator accrualGenerator object 
 ##' @param Naccrual Number of subjects to recruit
 ##' @param Nsim Number of simulations
@@ -156,7 +177,7 @@ simulate.Internal <- function( data,
   
   #create matrix of subject recruitment times including additional
   #accrual we have a matrix with 1 row per simulation, 1 column per subject
-  rec.details <- eventPrediction:::CalculateAccrualTimes(Naccrual,Nsim,indat$rand.date,accrualGenerator) 
+  rec.details <- CalculateAccrualTimes(Naccrual,Nsim,indat$rand.date,accrualGenerator) 
   
   #calculate quantiles from the recruitment details matrix for storing in output 
   recQuantiles <- eventPrediction:::SimQOutputFromMatrix(rec.details,limit,Nsim)

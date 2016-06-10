@@ -40,6 +40,7 @@ simulate.Mixture <- function( data, params,
                               limit=0.05, 
                               longlagsettings=NULL,
                               dropout=NULL ){
+  message( "!! This code has not been fully reviewed - please report any inconsistencies !!" )
   # THese are not applicable here
   r <- NULL
   HR <- NULL
@@ -100,7 +101,7 @@ simulate.Mixture <- function( data, params,
     accrualGenerator <-  new("AccrualGenerator",f=function(N){NULL},model="NONE",text="NONE")
   
   # This is necessary to create the FromDataResult Object. 
-  dummy <- eventPrediction:::FromDataParam(
+  dummy <- eventPrediction::FromDataParam(
     type="weibull",
     rate=1e-15,
     shape=1e-15,
@@ -193,9 +194,9 @@ PerformOneMixtureSimulation <- function(row,number.subjects,Naccrual,
     nw.2 <- nw.tmp[idx.2]
     
     rand.date.1 <- if( N.1 > 1 ) c( rand.date.1,as.Date( nw.1, origin="1970-01-01" ) )
-    else c(rand.date,as.Date( nw.1, origin="1970-01-01" ) )
+    else c(rand.date.1,as.Date( nw.1, origin="1970-01-01" ) )
     rand.date.2 <- if( N.1 > 1 ) c( rand.date.2,as.Date( nw.2, origin="1970-01-01" ) )
-    else c(rand.date,as.Date( nw.2, origin="1970-01-01" ) )
+    else c(rand.date.2,as.Date( nw.2, origin="1970-01-01" ) )
     
     w.1 <- c(w.1,(number.subjects+1):(number.subjects+N.1) )
     w.2 <- c(w.2,(number.subjects+N.1+1):(number.subjects+N.1+N.2))
@@ -206,24 +207,24 @@ PerformOneMixtureSimulation <- function(row,number.subjects,Naccrual,
   # Perhaps not optimally coded but decided to keep it this way due to the large
   # number of parameters. 
   # Simulate times from first mixture model
-  HR.1 <- if(is.null(HR)) rep(1,length(lower.bounds.1)) else GetHRs(HR,r,length(lower.bounds.1))
+  HR.1 <- if(is.null(HR)) rep(1,length(lower.bounds.1)) else eventPrediction:::GetHRs(HR,r,length(lower.bounds.1))
   row.1 <- data.frame( shape = row$shape, rate = 1/row$scale.1 )
   times.1 <- conditionalFunction(t.conditional=lower.bounds.1,params=row.1,HR=HR.1) 
 
   # Simulate times from second mixture model
-  HR.2 <- if(is.null(HR)) rep(1,length(lower.bounds.2)) else GetHRs(HR,r,length(lower.bounds.2))
+  HR.2 <- if(is.null(HR)) rep(1,length(lower.bounds.2)) else eventPrediction:::GetHRs(HR,r,length(lower.bounds.2))
   row.2 <- data.frame( shape = row$shape, rate = 1/row$scale.2 )
   times.2 <- conditionalFunction(t.conditional=lower.bounds.2,params=row.2,HR=HR.2) 
       
   
   #if competing risks dropout then deal with this
   if(dropout.rate != 0){
-    dropout.times.1 <- rcweibull( lower.bounds.1,params=list(shape=dropout.shape,rate=dropout.rate),
+    dropout.times.1 <- eventPrediction:::rcweibull( lower.bounds.1,params=list(shape=dropout.shape,rate=dropout.rate),
                                   HR=rep(1,length(lower.bounds.1)))
     event.type[w.1] <- ifelse(times.1 < dropout.times.1,0,1)
     times.1 <- pmin( times.1, dropout.times.1 )
     
-    dropout.times.2 <- rcweibull( lower.bounds.2,params=list(shape=dropout.shape,rate=dropout.rate),
+    dropout.times.2 <- eventPrediction:::rcweibull( lower.bounds.2,params=list(shape=dropout.shape,rate=dropout.rate),
                                   HR=rep( 1,length(lower.bounds.2)))
     event.type[w.2] <- ifelse( times.2 < dropout.times.2, 0, 1 )
     times.2 <- pmin( times.2, dropout.times.2 )

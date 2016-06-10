@@ -35,6 +35,38 @@ setClass( "PriorAndInitsMixture",
 )
 
 
+##' Function defining jags model
+##' @param prior.init Prior initialization parameters
+##' @param ctrl.rate Rate in subgroup 1
+##' @param exp.rate Rate in subgroup 2
+getJagsModel <- function( prior.init, ctrl.rate, exp.rate ) {
+  my.model <- "
+  model
+  {
+    for( i in 1:N )
+    {
+    is.censored[i] ~ dinterval( times.na[i], times.cens[i] )
+    subgroup[i] ~ dbern( p )
+    times.na[i] ~ dweib( shape, lambda[ 1+subgroup[i] ] )
+    surv[i] <- 1 - pweib( times[i], shape, lambda[ 1+subgroup[i] ] )
+    }"
+  
+  my.model <- paste0( my.model,
+                      "shape ~ dunif( ", prior.init@shape.min ,",", prior.init@shape.max , ")\n",
+                      "p ~ dunif( ", prior.init@mixture.min, ", ", prior.init@mixture.max, " )\n",
+                      "log.scale[1] ~ dnorm( log(", ctrl.rate , "), sd1 )\n", 
+                      "log.scale[2] ~ dnorm( log(", exp.rate, "), sd2 )\n",
+                      "sd1 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n",
+                      "sd2 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n", 
+                      "for( k in 1:2 ) {\n",
+                      "  lambda[k] <- pow( scale[k], -shape )\n", 
+                      "  scale[k] <- exp( log.scale[k] )\n",
+                      "  mu[k] <- scale[k]*exp(loggam(1+1/(shape)))\n",
+                      "}\n",
+                      "}" )
+  my.model 
+} 
+
 ##' BayesianMixtureFit of the Event Data
 ##' 
 ##' Creates an EventModel based on the fitting a Bayesian MCMC mixture model using
@@ -81,12 +113,15 @@ setMethod( "BayesianMixtureFit",
                      parallel=FALSE,
                      N.proc=NULL,
                      ... ){
+  message( "!! This code has not been fully reviewed - please report any inconsistencies !!" )
+             
   if( !dist %in% c( "weibull" ) ){
      stop( "dist must be weibull")
   }
   
   if( nrow( object@subject.data ) == 0 ) stop( "Empty data frame!" ) 
 
+             
   subject.data <- object@subject.data
 
   # Censored data must be recorded as NA
@@ -112,30 +147,7 @@ setMethod( "BayesianMixtureFit",
   ctrl.rate <- ctrl.rate/dayspermonth
   exp.rate  <- exp.rate/dayspermonth
   
-  my.model <- "
-  model
-  {
-    for( i in 1:N )
-    {
-    is.censored[i] ~ dinterval( times.na[i], times.cens[i] )
-    subgroup[i] ~ dbern( p )
-    times.na[i] ~ dweib( shape, lambda[ 1+subgroup[i] ] )
-    surv[i] <- 1 - pweib( times[i], shape, lambda[ 1+subgroup[i] ] )
-    }"
-    
-    my.model <- paste0( my.model,
-    "shape ~ dunif( ", prior.init@shape.min ,",", prior.init@shape.max , ")\n",
-    "p ~ dunif( ", prior.init@mixture.min, ", ", prior.init@mixture.max, " )\n",
-    "log.scale[1] ~ dnorm( log(", ctrl.rate , "), sd1 )\n", 
-    "log.scale[2] ~ dnorm( log(", exp.rate, "), sd2 )\n",
-    "sd1 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n",
-    "sd2 ~ dunif(", prior.init@scale.sd.min, ",", prior.init@scale.sd.max,")\n", 
-    "for( k in 1:2 ) {\n",
-    "  lambda[k] <- pow( scale[k], -shape )\n", 
-    "  scale[k] <- exp( log.scale[k] )\n",
-    "  mu[k] <- scale[k]*exp(loggam(1+1/(shape)))\n",
-    "}\n",
-    "}" )
+  my.model <- getJagsModel( prior.init, ctrl.rate, exp.rate ) 
   
   jags.init <- rep( NA, length( times.na ) )
   jags.init[ censored ] <- times.cens[ censored ] + 1
@@ -208,7 +220,8 @@ setMethod( "BayesianMixtureFit",
        scale.2.median = scale.2.hat,
        p.median = p.hat,
        mcmc.object = x, 
-       seed=as.numeric(seed) )
+       seed=as.numeric(seed),
+       jags.model=my.model )
 })
 
 
@@ -218,6 +231,7 @@ setMethod( "BayesianMixtureFit",
 ##' 
 ##' Creates a PriorAndInitsMixture object. These are guesses of the original 
 ##' parameters based on (protocol) assumptions.
+##' @param shape.init Initial value of the shape parameter.
 ##' @param shape.min The shape parameter prior is uniformly distributed between 
 ##' [shape.min, shape.max]. 
 ##' @param shape.max The shape parameter prior is uniformly distributed between 
