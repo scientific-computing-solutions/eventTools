@@ -80,6 +80,8 @@ setMethod( "plot", signature( x="EventModelBayesian", y="missing" ),
                length = npts )
     
     # Calculate mix coefficients so do not get mixup between arms
+    N.col <- ncol(x@mcmc.object)
+    N.row <- nrow(x@mcmc.object)
     tmp <- sapply( seq_len(N.row), function(i){sum( x@mcmc.object[i,7:N.col] )/N.col} )
     mix.coef <- median( tmp )
     
