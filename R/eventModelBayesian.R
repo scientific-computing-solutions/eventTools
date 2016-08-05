@@ -78,11 +78,16 @@ setMethod( "plot", signature( x="EventModelBayesian", y="missing" ),
     npts = 100
     xx <- seq( 0, max(x@event.data@subject.data$time, na.rm=T), 
                length = npts )
-    y.new <- (x@p.median)*pweibull( xx, 
+    
+    # Calculate mix coefficients so do not get mixup between arms
+    tmp <- sapply( seq_len(N.row), function(i){sum( x@mcmc.object[i,7:N.col] )/N.col} )
+    mix.coef <- median( tmp )
+    
+    y.new <- ((1-mix.coef))*pweibull( xx, 
                         scale = x@scale.1.median, 
                         shape = x@shape.median, 
                         lower.tail = FALSE ) + 
-                    (1-x@p.median)*pweibull( xx, 
+                    mix.coef*pweibull( xx, 
                                scale = x@scale.2.median, 
                                shape = x@shape.median, 
                                lower.tail = FALSE )
