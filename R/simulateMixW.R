@@ -40,8 +40,7 @@ simulate.Mixture <- function( data, params,
                               limit=0.05, 
                               longlagsettings=NULL,
                               dropout=NULL ){
-  message( "!! This code has not been fully reviewed - please report any inconsistencies !!" )
-  # THese are not applicable here
+  # These are not applicable here
   r <- NULL
   HR <- NULL
   seed <- 1234 #Not used (only dummy here)

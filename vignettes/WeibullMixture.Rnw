@@ -3,15 +3,14 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{fullpage}
-\usepackage[firstpage]{draftwatermark}
+%\usepackage[firstpage]{draftwatermark}
 \title{EventTools (v2.0): Weibull mixture (2 subgroups)}
 \author{Daniel Dalevi}
 % \VignetteIndexEntry{Predict from data - Basic tutorial}
 %\VignetteEngine{knitr::knitr} 
 
-\SetWatermarkText{!CODE NOT FULLY REVIEWED!}
-\SetWatermarkLightness{0.75}
-\SetWatermarkScale{2}
+%\SetWatermarkLightness{0.75}
+%\SetWatermarkScale{2}
 
 \begin{document}
 \sloppy
@@ -71,7 +70,7 @@ It is well known that a single Weibull may have problems capture the trends in t
 
 In order to fit a mixture model to this data, the eventTools package will need some prior information and initial values. These may be based on protocol assumptions and/or available historical data.
 
-The shape parameter will be assumed to be uniformly distributed within $[\alpha_{low},\alpha_{high}]$ and will also need an initial value ($1.2$). Since we know that the randomization balance is $1:1$ we will use this information and set a tight interval around $0.5$ for the mixture coefficient (\texttt{mixture.min}, \texttt{mixture.max}), which is also assumed to be uniformly distributed. This condition can be relaxed for other situations where we do not know the size of the subgroups. An assumed control median and a hazard ratio is also needed to calculate prior scale parameters. The logarithm of the scales will have a Gaussian prior with means equal to the log of the prior scale parameters and a standard deviation of $d_i$, $i=1,2$ where $d_i$ is uniformly distributed between $[sd_{min},sd_{max}]$. The initial values of the scale will also be based on these but with adding some random noise to it.
+The shape parameter will be assumed to be uniformly distributed within $[\alpha_{low},\alpha_{high}]$ and will also need an initial value ($1.2$). Since we know that the randomization balance is $1:1$ we will use this information and set an interval around $0.5$ for the mixture coefficient (\texttt{mixture.min}, \texttt{mixture.max}), which is also assumed to be uniformly distributed. This condition can be relaxed for other situations where we do not know the size of the subgroups. An assumed control median and a hazard ratio is also needed to calculate prior scale parameters. The logarithm of the scales will have a Gaussian prior with means equal to the log of the prior scale parameters and a standard deviation of $d_i$, $i=1,2$ where $d_i$ is uniformly distributed between $[sd_{min},sd_{max}]$. The initial values of the scale will also be based on these but with adding some random noise to it.
 
 <<priorandinit>>=
 prior.and.inits <- PriorAndInitValues( shape.init=1.2, 
@@ -79,13 +78,13 @@ prior.and.inits <- PriorAndInitValues( shape.init=1.2,
                                        shape.max=4,
                                        ctrl.median=3,
                                        hr=0.2,                        
-                                       mixture.min=0.499,
-                                       mixture.max=0.501,
+                                       mixture.min=0.4,
+                                       mixture.max=0.6,
                                        scale.sd.min = 0.9,
                                        scale.sd.max = 1.1 )
 @
 
-When fitting the model we need to provide the MCMC algorithm in Jags with some search information. The number of burnin samples (\texttt{N.burnin}) specifies how many iterations should be disregarded before starting sampling (there is also an initial model adaption period before this of 1000 iterations). \texttt{N.samples} specifies the number of samples we take and this will also be used in the prediction step where we run one simulation per sample. The thinning parameter tells how many samples to skip which can be used to avoid autocorrelation. Then we also set the seed for reproducibility. In this case we will only use a single chain but these can be specified with \texttt{N.chains} and it is also possible to run chains on several processors (see Help documentation).
+When fitting the model we need to provide the MCMC algorithm in Jags with some search information. The number of burnin samples (\texttt{N.burnin}) specifies how many iterations should be disregarded before starting sampling (there is also an initial model adaption period before this of $1000$ iterations). \texttt{N.samples} specifies the number of samples we take and this will also be used in the prediction step where we run one simulation per sample. The thinning parameter tells how many samples to skip which can be used to avoid autocorrelation. Then we also set the seed for reproducibility. In this case we will only use a single chain but these can be specified with \texttt{N.chains} and it is also possible to run chains on several processors (see Help documentation).
 
 <<fitting)>>=
 my.fit <- BayesianMixtureFit( my.data, 
@@ -107,7 +106,7 @@ The marginal densities for each parameter can also be plotted.
 densityPlot( my.fit )
 @
 
-In both plots $p$ is the mixture coefficient. The median is shown in red and the point corresponding to the maximum value in grey. The median will be used as a point estimate for the parameters when plotting the survival curve (see below). The true values of the scale parameters should be $83$ and $563$ and $1.2$ for the shape parameter.  Both the tracePlot and densityPlots should be inspected to see that we get a clear separation between the two scale parameters. Sometimes both scale parameters will have two peaks (one at the control and one at the active arm) which will result in a badly fit survival curve. Other times one of the scale parameters is close to zero which may happen when having too low subject time at risk.  
+In both plots $\pi$ is the mixture coefficient. The median is shown in red and the point corresponding to the maximum value in grey. The median will be used as a point estimate for the parameters when plotting the survival curve (see below). The true values of the scale parameters should be $83$ and $563$ and $1.2$ for the shape parameter.  Both the tracePlot and densityPlots should be inspected to see that we get a clear separation between the two scale parameters. Sometimes both scale parameters will have two peaks (one at the control and one at the active arm) which will result in a badly fit survival curve. Other times one of the scale parameters is close to zero which may happen when having too low subject time at risk.  
 
 Some additional information is provided by the objects print/show method.
 <<>>=
@@ -147,6 +146,52 @@ This is because the single Weibull model captures the tail of the curve reasonab
 
 \section{Future work}
 The current approach can only deal with two subgroups. Sometimes there are reasons to believe we have more than two subgroups and the current approach can be extended for those situations. It is not clear how well the estimation will work. Then there is also the possibility to extend for lag-periods.
+
+\section{Appendix: Parametrizations R, JAGS and eventPrediction}
+The underlying JAGs model is stored in the fitted object and can be manually inspected.
+<<>>=
+ cat( my.fit@jags.model )
+@
+
+
+The event prediction parameterization of the Weibull distribution is
+$$S(t)=e^{-(\lambda t)^\alpha}$$
+which is the same as in $R$ (i.e. \texttt{rweibull}) when setting $b=1/\lambda$ where the parameterization is given w.r.t a shape ($\alpha$) and a scale ($b$) parameter.
+$$S(t)=e^{-(t/b)^\alpha}$$
+In JAGs the survival function is given by:
+$$
+S_J(t) = e^{-\lambda_J t^\alpha}
+$$
+Comparing these we get
+$$
+(t/b)^\alpha = \lambda_J t^\alpha 
+$$
+$$
+(1/b)^\alpha = \lambda_J 
+$$  
+\begin{equation}
+\label{eq:relbtojags}
+\lambda_J = b^{-\alpha} 
+\end{equation}
+This is the reason why in the JAGs model $\lambda$ is defined for each arm $k$ as:
+<<eval=FALSE>>=
+ lambda[k] <- pow( scale[k], -shape )
+@
+We also know in $R$-parameterization results in an expectation of:
+$$E = b\Gamma(1+1/\alpha)$$
+This can easily be confirmed:
+<<>>=
+mean( rweibull( 1e6, shape=2, scale=3 ) )
+3*gamma(1+1/2)
+@
+This is why we in the JAGs model have:
+<<eval=FALSE>>=
+mu[k] <- scale[k]*exp(loggam(1+1/(shape)))
+@
+Note: \texttt{scale[k]} is already related to \texttt{lambda[k]} by equation~\ref{eq:relbtojags}. So no need to write it like this:
+<<eval=FALSE>>=
+mu[k] <- (1/lambda[k])^(1/shape)*exp(loggam(1+1/(shape)))
+@
 
 \bibliographystyle{plain}
 \bibliography{eventTools}

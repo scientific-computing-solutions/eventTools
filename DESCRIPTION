@@ -1,8 +1,8 @@
 Package: eventTools
 Type: Package
 Title: Additional extensions/functionality for the eventPrediction package
-Version: 1.5
-Date: 2016-05-02
+Version: 2.0
+Date: 2016-99-26
 Author: Daniel Dalevi
 Maintainer: Daniel Dalevi <daniel.dalevi@astrazeneca.com>
 Description: This package adds additional extensions to the event prediction

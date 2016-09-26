@@ -14,7 +14,7 @@ setOldClass( "mcmc" )
 ##' @slot shape.median Shape median of sampled distribution. 
 ##' @slot scale.1.median Median of the first of the scale parameters of sampled distribution.
 ##' @slot scale.2.median Median of rthe second of the scale parameters of sampled distribution.
-##' @slot p.median Median of the mixture coefficient of the sampled distribution. 
+##' @slot pi.median Median of the mixture coefficient of the sampled distribution. 
 ##' @slot mcmc.object The MCMC object containing the sampled distributions.  
 ##' @slot seed Seed used stored for reproducibility.
 ##' @slot jags.model The jags model used as a character string. 
@@ -26,7 +26,7 @@ setClass( "EventModelBayesian",
                  shape.median = "numeric",
                  scale.1.median = "numeric",
                  scale.2.median = "numeric",
-                 p.median = "numeric",
+                 pi.median = "numeric",
                  mcmc.object = "mcmc",
                  seed = "numeric", 
                  jags.model = "character"
@@ -51,7 +51,7 @@ setMethod("show",
       "Shape.hat (median): ", object@shape.median, "\n",
       "Scale.hat[1] (median): ", object@scale.1.median, "\n",
       "Scale.hat[2] (median): ", object@scale.2.median, "\n",
-      "p.mixture.hat (median): ", object@p.median, "\n" ) )
+      "pi.mixture.hat (median): ", object@pi.median, "\n" ) )
 })
 
 
@@ -118,7 +118,7 @@ setGeneric( "tracePlot",
 setMethod( "tracePlot", signature( object="EventModelBayesian" ),
            function( object ){
              idx <- which( names( object@mcmc.object[1,] ) %in% 
-                             c( "shape", "p", "scale[1]", "scale[2]" ) )
+                             c( "shape", "pi", "scale[1]", "scale[2]" ) )
              xyplot( object@mcmc.object[,idx] )             
 })
 
@@ -138,7 +138,7 @@ setGeneric( "densityPlot",
 setMethod( "densityPlot", signature( object="EventModelBayesian" ),
            function( object ){
              idx <- which( names( object@mcmc.object[1,] ) %in% 
-                             c( "shape", "p", "scale[1]", "scale[2]" ) )
+                             c( "shape", "pi", "scale[1]", "scale[2]" ) )
              densityplot( object@mcmc.object[,idx], 
                panel=function(x,...){
                  panel.densityplot(x,...)
