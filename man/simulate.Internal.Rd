@@ -3,7 +3,7 @@
 \alias{simulate.Internal}
 \title{Only used internally}
 \usage{
-simulate.Internal(data, SimParamsRgt, SimParamsList, timeCutList,
+\method{simulate}{Internal}(data, SimParamsRgt, SimParamsList, timeCutList,
   accrualGenerator = NULL, Naccrual = 0, Nsim = 10000, seed = NULL,
   limit = 0.05, longlagsettings = NULL, dropout = NULL)
 }

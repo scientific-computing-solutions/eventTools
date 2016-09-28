@@ -58,9 +58,10 @@ setMethod("show",
 
 ##' Plots the EventModelBayesian object
 ##' @rdname plot-methods
+##' @param z dummy
+##' @param units Days or Months
+##' @param ... Additional arguments to be passed to the method
 ##' @aliases plot,EventModelBayesian,missing-method
-##' @param z z 
-##' @export
 setMethod( "plot", signature( x="EventModelBayesian", y="missing" ),
   function(x, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
                 ylab="", main="", ylim=NULL, xlim=NULL, ...) { 

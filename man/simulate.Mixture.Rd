@@ -3,8 +3,8 @@
 \alias{simulate.Mixture}
 \title{Only used internally}
 \usage{
-simulate.Mixture(data, params, accrualGenerator = NULL, Naccrual = 0,
-  limit = 0.05, longlagsettings = NULL, dropout = NULL)
+\method{simulate}{Mixture}(data, params, accrualGenerator = NULL,
+  Naccrual = 0, limit = 0.05, longlagsettings = NULL, dropout = NULL)
 }
 \arguments{
 \item{data}{EventData object}

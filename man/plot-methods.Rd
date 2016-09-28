@@ -30,7 +30,7 @@
 \arguments{
 \item{x}{EventModel, EventModelExtended or LagTimeEstimate}
 
-\item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
+\item{units}{Days or Months}
 
 \item{xlab}{X-label titel}
 
@@ -46,10 +46,14 @@
 
 \item{y}{missing or EventModelExtended}
 
-\item{z}{z}
+\item{z}{dummy}
 
 \item{smoothing}{If true will add a smoothed line to the curve and use
 that for when retreiving the optimal time value.}
+
+\item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
+
+\item{...}{Additional arguments to be passed to the method}
 
 \item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
 

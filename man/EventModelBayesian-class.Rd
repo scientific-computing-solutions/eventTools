@@ -21,7 +21,7 @@ of an Eventdata object
 
 \item{\code{scale.2.median}}{Median of rthe second of the scale parameters of sampled distribution.}
 
-\item{\code{p.median}}{Median of the mixture coefficient of the sampled distribution.}
+\item{\code{pi.median}}{Median of the mixture coefficient of the sampled distribution.}
 
 \item{\code{mcmc.object}}{The MCMC object containing the sampled distributions.}
 
