@@ -15,6 +15,6 @@ checkValidTimeCut <- function( x, y ) {
   if( ( y@time.cut - max(x@event.data@subject.data$time, na.rm=T) ) > 2 ) {
     warning( paste0( "The change point should equal the largest time in the right censored model!", 
                      "That or all patients have had events! Regardless, this situation may result", 
-                     "undefined behaiviour!" ) )
+                     "undefined behaviour!" ) )
   } 
 }

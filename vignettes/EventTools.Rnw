@@ -4,7 +4,7 @@
 \usepackage{hyperref}
 \usepackage{fullpage}
 %\usepackage[firstpage]{draftwatermark}
-\title{EventTools: 2-piecewise Weibull and lagtimes}
+\title{EventTools: N-piecewise Weibull and lagtimes}
 \author{Daniel Dalevi}
 % \VignetteIndexEntry{Predict from data - Basic tutorial}
 %\VignetteEngine{knitr::knitr} 
@@ -36,9 +36,10 @@ library( eventTools )
 @
 
 \section{Estimating the change-point}
+\label{sec:changepoint}
 The data used in this vignette is simulated under the assumption of a lag-time. The same approach can, however, be used for other situations where there is a change in the event rate during the trial resulting in data suitable for a 2-piecewise model (could also result from other types of non-proportional hazards). In the case of a lag-effect, the HR is $1$ until the change-point when treatment starts showing effect. The simulated OS data set is available in the package and we will be used for illustration. It contains $979$ subjects and assumes a lag-time of $165$ days and a post-lag HR of $0.25$. The control median was set to $5.8$ with a shape parameter of $1.2$. The study settings (not the simulated data) can be visualized using the \texttt{nonproportionalHazards} package (Figure~\ref{fig:nphz}, for details see the \texttt{nonproportionalHazards} documentation).
 <<nphz, echo=FALSE, fig=TRUE, fig.cap="Visualizing the settings for the simulated data.">>=
-library( nonproportionalHazards)
+library( nonproportionalHazards )
 study <- delayedResponse( lag.time=5.5, 
                           median.control.time=5.8, 
                           hazard.ratio=0.25,
@@ -72,7 +73,7 @@ plot( my.fit )
 @
 
 It is evident that the model fit is poor which is not surprising due to the nature of the data. Assuming that we have a change-point ($T$), there are various ways of estimating when this occurs. Perhaps the simplest is to include a co-variate (factor) in the survival method which is true if a subject is in the lag period and false otherwise. With an exponential survival function we can model the event rate as if constant before and after T. Given a set of possible change-points we can select the $T$ providing the best model fit. This may not always converge but in the package there is a function that visualize the fit given a search boundary for $T$ (Figure~\ref{fig:opt}). Note, the exponential survival function is set as default because it easily converges with a single parameter. Other distributions can also be selected. It is also important to note that currently no tests are made for the presence of a lag-effect. The method may give a change-point estimate though there is none and therefore it is also important to visually inspect the data (see also Section~\ref{sec:leftfit})   
-<<opt, fig.cap="The optimal change point based on an exponential model with a time covariate/indicator.">>=
+<<opt, fig.cap="The optimal change-point based on an exponential model with a time covariate/indicator.">>=
   est.obj <- estimateLagTime( my.data, t.start=0.5, t.stop=20, dt=0.5 )
   plot( est.obj )
   estLagT <- getEstimate( est.obj )
@@ -108,7 +109,7 @@ The second part of the data will only contain subjects that survived longer than
  plot( right.cens.fit, left.trunc.fit )
 @
 
-While the fit is much better than the original one, we can see that the tail may not be fully captured (Figure~\ref{fig:both}). Depending on the censoring status of the data and other aspects it may be hard to entirely automate the estimation of the change point. Sometimes, for example, it may be more important to capture the tail of the distribution. Therefore it is important also to visually inspect the resulting curves. The implemented approach allows us to adjust the change-point and refit the models. In this case the tail may be better modelled by increasing it from $152$ to $160$ days (Figure~\ref{fig:bothmod}). In later versions (See Section~\ref{sec:futwork}) we aim to include an estimate of a CI for the change-point which would give an indication of the plausible value range.
+While the fit is much better than the original one, we can see that the tail may not be fully captured (Figure~\ref{fig:both}). Depending on the censoring status of the data and other aspects it may be hard to entirely automate the estimation of the change-point. Sometimes, for example, it may be more important to capture the tail of the distribution. Therefore it is important also to visually inspect the resulting curves. The implemented approach allows us to adjust the change-point and refit the models. In this case the tail may be better modelled by increasing it from $152$ to $160$ days (Figure~\ref{fig:bothmod}). In later versions (See Section~\ref{sec:futwork}) we aim to include an estimate of a CI for the change-point which would give an indication of the plausible value range.
 
 <<bothmod, fig.cap="Including the model fitted on the left truncated and right censored data after moving the change-point.">>=
  estLagT <- 160 
@@ -148,6 +149,43 @@ The expected time when reaching $900$ events for this data is $39$ months, i.e. 
   results <- predict( results, event.pred=900 )
   plot( results, show.title=TRUE )
 @
+
+
+\section{N change-points}
+The implementation allows for defining an arbitrary number of change-points; however, currently no method is available to get an estimate of more than one change-point (Section~\ref{sec:changepoint}). These need to be specified manually by inspecting the resulting KM curve. Here we use $4$ models separated by $3$ change-points for the same dataset (simulated under a 2-piecewise Weibull model).
+
+<<npieces, fig.cap="Three change-points separating four Weibull models.">>=
+  chP1 <- 50 
+  chP2 <- 100 
+  chP3 <- 160 
+  
+  # P1:
+  right.cens.data.1 <- KMRightCensor( my.data, chP1 )
+  fitP1 <- fit( right.cens.data.1 )
+
+  # P2: 
+  right.cens.data.2 <- KMRightCensor( my.data, chP2 )
+  fitP2 <- LeftFit( right.cens.data.2, chP1 )
+
+  # P3: 
+  right.cens.data.3 <- KMRightCensor( my.data, chP3 )
+  fitP3 <- LeftFit( right.cens.data.3, chP2 )
+
+  # 4: 
+  fitP4 <- LeftFit( my.data, chP3 )
+  plot( fitP1, list( fitP2, fitP3, fitP4 ) )
+@
+
+Note, to plot the results you need to put all left-truncated models in a list. Each change-point will be marked with a dashed line (Figure~\ref{fig:npieces}). The simulation step also requires all models to be in a list.  The prediction figure is plotted as normal (Figure~\ref{fig:prednpieces})
+<<prednpieces, fig.cap="Predictions using the model with three change-points.">>=
+  lft.models <- list( fitP2, fitP3, fitP4 )
+  results <- simulatePW( right.cens.fit, lft.models,  
+    Nsim = 500, #Number of simulations to perform
+    seed = 20160322 )
+  results <- predict( results, event.pred=900 )
+  plot( results, show.title=TRUE )
+@
+
 
 \section{Future work}
 \label{sec:futwork}

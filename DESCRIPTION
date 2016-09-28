@@ -1,8 +1,8 @@
 Package: eventTools
 Type: Package
 Title: Additional extensions/functionality for the eventPrediction package
-Version: 1.0
-Date: 2016-04-13
+Version: 2.0
+Date: 2016-99-26
 Author: Daniel Dalevi
 Maintainer: Daniel Dalevi <daniel.dalevi@astrazeneca.com>
 Description: This package adds additional extensions to the event prediction
@@ -15,7 +15,9 @@ Depends:
     eha,
     methods,
     scales,
-    R (>= 2.10)
+    runjags,
+    coda,
+    R (>= 3.1)
 Imports:
     eventPrediction
 Suggests:

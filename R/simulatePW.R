@@ -4,90 +4,165 @@
 ##' @param HR HR
 rcpweibull <- function( t.conditional, params, HR ) {
   params <- as.list( params )
-  
-  idx <- which( t.conditional < params$time.cut )
-  
-  if( length(HR) == 1 ) HR <- rep( HR, length(t.conditional) )
-  # HR is a vector why rate becomes a vector, not 
-  # sure why this is necessary, need to check!
-  params$rate <- params$rate*(HR)^{1/params$shape}
-  params$rate.lft <- params$rate.lft*(HR)^{1/params$shape}
-  
+
+  # Generate times for patients in the first time-interval
+  # using the right-censored model
+  idx <- which( t.conditional < params$time.cut.1 )
   my.times <- rep( NA, length( t.conditional ) )
-  my.times[ idx ] <- t.conditional[ idx ]*params$rate[ idx ]
+  my.times[ idx ] <- t.conditional[ idx ]*params$rate
   my.times[ idx ] <- ((my.times[ idx ]^params$shape + 
-                         rexp(length(my.times[ idx ])))^(1/params$shape))/params$rate[ idx ]
+                         rexp(length(my.times[ idx ])))^(1/params$shape))/params$rate
 
-  # All times generated from model 1 that exceeds the cutoff needs 
-  # to be resimulated with model 2 conditioned on time.cut
-  idx2 <- which( my.times > params$time.cut )
-
-  # All times simulated that exceeds time.cut will be set to time.cut and
-  # simulated from the left-truncated model
-  t.conditional[ idx2 ] = params$time.cut 
-  my.times[ idx2 ] = NA
-
-  # Simulate all with undefined times
-  idx3 <- which( is.na( my.times ) ) 
+  # Loop over all other time intervals
   
-  my.times[ idx3 ] <- t.conditional[ idx3 ]*params$rate.lft[ idx3 ]
-  my.times[ idx3 ] <- ((my.times[ idx3 ]^params$shape.lft + 
-                          rexp(length(my.times[ idx3 ])))^(1/params$shape.lft ))/params$rate.lft[ idx3 ]
+  # All times generated from previous model that exceeds time.cut.i needs 
+  # to be resimulated with model i conditioned on time.cut.i
+  var.time.cut <- paste0( "time.cut.", params$N+1 )
+  params[[ var.time.cut ]] = Inf
+  for( i in seq_len( params$N ) ) {
+    var.time.cut <- paste0( "time.cut.", i )
+    var.time.cut.next <- paste0( "time.cut.", i+1 )
+    var.rate <- paste0( "rate.lft.", i )
+    var.shape <- paste0( "shape.lft.", i )
+    
+    idx2 <- which( my.times > params[[ var.time.cut ]] )
+
+    # All times simulated that exceeds time.cut.i will be set to time.cut.i and
+    # simulated from the left-truncated model
+    t.conditional[ idx2 ] = params[[ var.time.cut ]]
+    my.times[ idx2 ] = NA
+
+    # Simulate all with undefined times that are less than nexd change-point
+    idx3 <- which( is.na( my.times ) & t.conditional < params[[ var.time.cut.next ]] ) 
+  
+    my.times[ idx3 ] <- t.conditional[ idx3 ]*params[[ var.rate ]]
+    my.times[ idx3 ] <- ((my.times[ idx3 ]^params[[ var.shape ]] + 
+                          rexp(length(my.times[ idx3 ])))^(1/params[[ var.shape ]] ))/params[[ var.rate ]]
+  }
   my.times 
 }
 
 
 ##' Simulate method for use when predicting from piecewise Weibull
 ##' @param object The model fitted on Right censored data
-##' @param object2 The model fittend on Left truncated/Right censored data
+##' @param leftobjects The model fitted on Left truncated/Right censored data. Either a single
+##' or a list of many EventModelExtended objects. 
 ##' @param ... Additional arguments to be passed to the method
 ##' @rdname simulatePW-methods
 ##' @export 
 setGeneric( "simulatePW",
-  function( object, object2, ... )
+  function( object, leftobjects, ... )
            standardGeneric( "simulatePW")
 )
 
 
 
-##' @rdname simulatePW-methods
-##' @export
+# ##' @rdname simulatePW-methods
+# ##' @export
 setMethod( "simulatePW",signature=c( "EventModel", "EventModelExtended" ),
-  function( object, object2, ... ){
+  function( object, leftobjects, ... ){
     # Currently only Weibull allowed
     if( object@simParams@type != "weibull" ||
-        object2@simParams@type != "weibull" ){
+        leftobjects@simParams@type != "weibull" ){
       stop( "Only weibull is currenlty allowed for the piecewise simulation!")
     }
-    checkValidTimeCut(  object, object2 )
-  simulate.Internal( object2@event.data, object@simParams, object2@simParams, object2@time.cut, ... )
+    checkValidTimeCut(  object, leftobjects )
+  simulate.Internal( leftobjects@event.data, 
+                     object@simParams, 
+                     list( leftobjects@simParams ), 
+                     list( leftobjects@time.cut ), ... )
 })
+
+##' @rdname simulatePW-methods
+##' @export
+setMethod( "simulatePW",signature=c( "EventModel", "list" ),
+           function( object, leftobjects, ... ){
+             leftobjects <- as.list( leftobjects )
+             # Currently only Weibull allowed
+             if( any( sapply( leftobjects, function(x) class(x) != "EventModelExtended" ) ) ){
+               stop( "All leftobjects need to be of type EventModelExtended!")
+             }
+             if( object@simParams@type != "weibull" ||
+                 any( sapply( leftobjects, function(x) x@simParams@type ) != "weibull" ) ){
+               stop( "Only weibull is currenlty allowed for the piecewise simulation!")
+             }
+             
+             x.models <- append( list( object ), leftobjects ) 
+             simParamsList <- list()
+             timeCutList <- list()
+             for( i in 1:( length( x.models ) - 1 ) ) {
+               checkValidTimeCut( x.models[[i]], x.models[[i+1]] )
+               simParamsList <- append( simParamsList, x.models[[i+1]]@simParams )
+               timeCutList   <- append( timeCutList, x.models[[i+1]]@time.cut    )
+             }
+             
+             simulate.Internal( x.models[[ length( x.models ) ]]@event.data, 
+                                object@simParams, 
+                                simParamsList, 
+                                timeCutList, ... )
+           })
+
+
+CalculateAccrualTimes <- function(Naccrual,Nsim,rand.dates,accrualGenerator){
+  rs <-t(replicate(Nsim,rand.dates,simplify = "matrix"))
+  if(length(rand.dates)==1) rs <- matrix(rs,nrow=Nsim)
+  
+  if(Naccrual==0){
+    return(rs)
+  }
+  
+  newrecs <- if(Naccrual==1) matrix(replicate(Nsim, accrualGenerator@f(Naccrual)),ncol=1)
+  else t(replicate(Nsim, accrualGenerator@f(Naccrual)))
+  
+  if(length(rand.dates)==0) return(newrecs)
+  
+  if(min(newrecs) < max(rand.dates)){
+    warning("Some new recruited subjects have rand.date earlier than some existing subjects")
+  }
+  
+  return(cbind(rs,newrecs))
+}
+
+
 
 ##' Only used internally
 ##' @param data EventData object 
-##' @param SimParamsRgt Fitted KM right censored model
-##' @param SimParamsLft Fitted left truncated model
-##' @param time.cut Change point
-##' @param accrualGenerator accrualGenerator object
+##' @param SimParamsRgt Parameters for fitted KM right censored model
+##' @param SimParamsList List of parameters for Fitted left truncated model
+##' @param timeCutList List of change points, should equal length of SimParamsList
+##' @param accrualGenerator accrualGenerator object 
 ##' @param Naccrual Number of subjects to recruit
 ##' @param Nsim Number of simulations
 ##' @param seed Random seed
 ##' @param limit Used to set CI limit
 ##' @param longlagsettings LonLagSettings object
 ##' @param dropout Dropout object 
-simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut, 
-                               accrualGenerator=NULL,Naccrual=0, Nsim=1e4, 
+simulate.Internal <- function( data, 
+                               SimParamsRgt,
+                               SimParamsList, 
+                               timeCutList, 
+                               accrualGenerator=NULL, Naccrual=0, 
+                               Nsim=1e4, 
                                seed=NULL, limit=0.05, 
                                longlagsettings=NULL,
                                dropout=NULL ){
-  # THese are not applicable here
+  
+  # These are not applicable here
   r <- NULL
   HR <- NULL
-  #validate the arguments
+  # Validate the arguments
   eventPrediction:::validate.simulate.arguments(accrualGenerator,Naccrual,Nsim,seed,
                               limit,longlagsettings,HR,r,data)  
-
-  if( time.cut < 0 ){ stop( "Negative change point!" ) }
+  if( !all( sapply( SimParamsList, function(i) class( i )[1]=="FromDataSimParam" ) ) ){
+    stop( "All elements in SimParamsList need to be of class FromDataSimParam" )
+  }
+  if( length( SimParamsList ) != length( timeCutList ) ){
+    stop( "Length of SimParamsList should equal timeCutList" )
+  }
+  if( !all( sapply( timeCutList, function(i) length(i)>0 ) ) ){
+    stop( "Negative change point(s) in timeCutList!" )
+  }
+  
   #calculate the dropout rate and shape for drop out
   dropoutctrlSpec <- eventPrediction:::CtrlSpecFromList(dropout,eventtext="",1)[[1]]
   dropout.shape <- if(is.null(dropout) || is.null(dropout$shape)) 1 else dropout$shape
@@ -102,7 +177,7 @@ simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut,
   
   #create matrix of subject recruitment times including additional
   #accrual we have a matrix with 1 row per simulation, 1 column per subject
-  rec.details <- eventPrediction:::CalculateAccrualTimes(Naccrual,Nsim,indat$rand.date,accrualGenerator) 
+  rec.details <- CalculateAccrualTimes(Naccrual,Nsim,indat$rand.date,accrualGenerator) 
   
   #calculate quantiles from the recruitment details matrix for storing in output 
   recQuantiles <- eventPrediction:::SimQOutputFromMatrix(rec.details,limit,Nsim)
@@ -114,9 +189,20 @@ simulate.Internal <- function( data, SimParamsRgt, SimParamsLft, time.cut,
   #generate the simulation specific parameters
   #e.g. rate and shape Weibull parameters used for each simulation 
   singleSimParamsRgt <- SimParamsRgt@generateParameterFunction( Nsim )
-  singleSimParamsLft   <- SimParamsLft@generateParameterFunction( Nsim )
-  singleSimParams <- cbind( singleSimParamsRgt, rate.lft=singleSimParamsLft[,2], shape.lft=singleSimParamsLft[,3], 
-                            time.cut = time.cut )
+  singleSimParams <- singleSimParamsRgt
+  
+  for( i in seq_len( length( timeCutList ) ) ){  
+    singleSimParamsLft <- SimParamsList[[ i ]]@generateParameterFunction( Nsim )
+    singleSimParams <- cbind( singleSimParams, 
+                              singleSimParamsLft[,2], 
+                              singleSimParamsLft[,3], 
+                              timeCutList[[ i ]] )
+    colnames( singleSimParams )[(length(singleSimParams[1,])-2):length(singleSimParams[1,])] <- 
+      c(  paste0( "rate.lft.", i ),
+          paste0( "shape.lft.", i ),
+          paste0( "time.cut.", i ) )
+  }
+  singleSimParams <- cbind( singleSimParams, N=rep( length( timeCutList ), nrow( singleSimParams ) ) )
   
   #perform the simulations    
   outcomes <-apply( singleSimParams, 1, eventPrediction:::PerformOneSimulation,

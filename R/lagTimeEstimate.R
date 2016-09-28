@@ -45,7 +45,7 @@ setMethod( "estimateLagTime",signature=c( "EventData" ),
    lagT <- seq( t.start, t.stop, dt )*standarddaysinyear()/12
    xic <- rep( NA, length( lagT ))
    for( i in seq_along( lagT ) ){
-     tmp.data <-  my.data@subject.data
+     tmp.data <-  object@subject.data
      tmp.data$ind <- tmp.data$time > lagT[i]
      model <- survreg( Surv( time, has.event )~ind, 
                        data=tmp.data, 
