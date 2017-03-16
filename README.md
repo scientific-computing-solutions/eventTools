@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/scientific-computing-solutions/eventTools.svg?branch=master)](https://travis-ci.org/scientific-computing-solutions/eventTools)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/eventTools)](https://cran.r-project.org/package=eventTools)
-[![Coverage Status](https://coveralls.io/repos/scientific-computing-solutions/eventTools/badge.svg?branch=forCRAN&service=github)](https://coveralls.io/github/scientific-computing-solutions/eventTools?branch=forCRAN)
+[![Coverage Status](https://coveralls.io/repos/scientific-computing-solutions/eventTools/badge.svg?branch=master&service=github)](https://coveralls.io/github/scientific-computing-solutions/eventTools?branch=master)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/scientific-computing-solutions/eventTools?branch=master&svg=true)](https://ci.appveyor.com/project/scientific-computing-solutions/eventTools)
 [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/eventTools)](https://cran.r-project.org/package=eventTools)
 
