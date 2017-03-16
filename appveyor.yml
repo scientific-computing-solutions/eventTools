@@ -14,6 +14,8 @@ install:
 
 build_script:
   - travis-tool.sh install_deps
+  - Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org')"
+  - Rscript -e "devtools::install_github('scientific-computing-solutions/eventPrediction')"
 
 test_script:
   - travis-tool.sh run_tests

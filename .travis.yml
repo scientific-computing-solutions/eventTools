@@ -10,6 +10,8 @@ r_github_packages:
 
 before_install: 
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo tlmgr install preprint url; fi 
+  - Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org')"
+  - Rscript -e "devtools::install_github('scientific-computing-solutions/eventPrediction')"
 
 after_success:
   - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then echo 'covr::coveralls(quiet=FALSE)' | R --vanilla; fi
