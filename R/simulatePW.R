@@ -57,8 +57,8 @@ setGeneric( "simulatePW",
 
 
 
-# ##' @rdname simulatePW-methods
-# ##' @export
+##' @rdname simulatePW-methods
+##' @export
 setMethod( "simulatePW",signature=c( "EventModel", "EventModelExtended" ),
   function( object, leftobjects, ... ){
     # Currently only Weibull allowed

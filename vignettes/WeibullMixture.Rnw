@@ -62,7 +62,7 @@ my.data <- EventData( data=mix.data,
 
 The agreement between a single Weibull and the data can be visualized (as usual) using the eventPrediction package. 
 
-<<eventpredfit, fig=TRUE>>=
+<<eventpredfit>>=
 plot( fit( my.data ) ) 
 @
 
@@ -193,7 +193,6 @@ Note: \texttt{scale[k]} is already related to \texttt{lambda[k]} by equation~\re
 mu[k] <- (1/lambda[k])^(1/shape)*exp(loggam(1+1/(shape)))
 @
 
-\bibliographystyle{plain}
 \bibliography{eventTools}
 
 \end{document}

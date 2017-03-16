@@ -1,12 +1,12 @@
 Package: eventTools
 Type: Package
-Title: Additional extensions/functionality for the eventPrediction package
+Title: Additional Extensions/Functionality for the eventPrediction Package
 Version: 2.0
-Date: 2016-99-26
+Date: 2016-09-26
 Author: Daniel Dalevi
 Maintainer: Daniel Dalevi <daniel.dalevi@astrazeneca.com>
-Description: This package adds additional extensions to the event prediction
-    package.
+Description: Extensions to the eventPrediction package for non-proportional
+    hazard models.
 License: GPL (>=2)
 Depends:
     ggplot2,
@@ -24,3 +24,4 @@ Suggests:
     knitr,
     testthat
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
