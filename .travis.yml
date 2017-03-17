@@ -1,16 +1,22 @@
 language: r
-cache: packages
+cache: 
+  packages: true
 
 os:
   - linux
   - osx
 
+apt_packages:
+  - jags
+
+repos:
+  CRAN: https://cloud.r-project.org
+
 r_github_packages:
   - jimhester/covr
 
 before_install: 
-  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo tlmgr install preprint url; fi 
-  - sudo apt-get install jags
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo tlmgr install preprint url; fi
   - Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org')"
   - Rscript -e "devtools::install_github('scientific-computing-solutions/eventPrediction')"
 

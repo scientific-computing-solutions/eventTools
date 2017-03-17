@@ -37,24 +37,24 @@ library( eventTools )
 
 \section{Estimating the change-point}
 \label{sec:changepoint}
-The data used in this vignette is simulated under the assumption of a lag-time. The same approach can, however, be used for other situations where there is a change in the event rate during the trial resulting in data suitable for a 2-piecewise model (could also result from other types of non-proportional hazards). In the case of a lag-effect, the HR is $1$ until the change-point when treatment starts showing effect. The simulated OS data set is available in the package and we will be used for illustration. It contains $979$ subjects and assumes a lag-time of $165$ days and a post-lag HR of $0.25$. The control median was set to $5.8$ with a shape parameter of $1.2$. The study settings (not the simulated data) can be visualized using the \texttt{nonproportionalHazards} package (Figure~\ref{fig:nphz}, for details see the \texttt{nonproportionalHazards} documentation).
+The data used in this vignette is simulated under the assumption of a lag-time. 
+The same approach can, however, be used for other situations where there is a change 
+in the event rate during the trial resulting in data suitable for a 2-piecewise model 
+(could also result from other types of non-proportional hazards). In the case of 
+a lag-effect, the HR is $1$ until the change-point when treatment starts showing 
+effect. The simulated OS data set is available in the package and we will be used 
+for illustration. It contains $979$ subjects and assumes a lag-time of $165$ days 
+and a post-lag HR of $0.25$. The control median was set to $5.8$ with a shape parameter 
+of $1.2$. The study settings (not the simulated data) can be visualized using the 
+(yet to be released) \texttt{nonproportionalHazards} package (Figure~\ref{fig:nphz}.
 <<nphz, echo=FALSE, fig.cap="Visualizing the settings for the simulated data.">>=
-library( nonproportionalHazards )
-study <- delayedResponse( lag.time=5.5, 
-                          median.control.time=5.8, 
-                          hazard.ratio=0.25,
-                          followup.time=20, 
-                          total.patients=979, 
-                          alpha=0.05,
-                          randomization=1, 
-                          accrual.duration=12, 
-                          accrual.weight=1,
-                          definition=hazard )
-    landmark.times <- seq(0, 32, length.out=100)
-    curves <- survival( study, landmark.times )
-    plot( curves, xlab="Study time [months]" )
+data( nph_study )
+landmark.times <- seq(0, 32, length.out=100)
+curves <- survival( study, landmark.times )
+plot( curves, xlab="Study time [months]" )
 @
-The dataset is loaded into R and an EventData object is created. The time is calculated from the event date and the last date. 
+The dataset is loaded into R and an EventData object is created. The time is calculated 
+from the event date and the last date. 
 <<>>=
 data( lag.data )
 
@@ -66,13 +66,26 @@ my.data <- EventData( data=lag.data,
                       time=list( event.date="eventDate",
                                  last.date="lastDate" ) )
 @
-A model can be fitted to this (blinded) data (see EventPrediction vignette) without accounting for the lag-effect. The survival curve can be plotted with the model (Figure~\ref{fig:original}). 
+A model can be fitted to this (blinded) data (see EventPrediction vignette) without 
+accounting for the lag-effect. The survival curve can be plotted with the model (Figure~\ref{fig:original}). 
 <<original, fig.cap="Fitting the model using the eventPrediction package with a single Weibull survival function.">>=
 my.fit <- fit( my.data )
 plot( my.fit )
 @
 
-It is evident that the model fit is poor which is not surprising due to the nature of the data. Assuming that we have a change-point ($T$), there are various ways of estimating when this occurs. Perhaps the simplest is to include a co-variate (factor) in the survival method which is true if a subject is in the lag period and false otherwise. With an exponential survival function we can model the event rate as if constant before and after T. Given a set of possible change-points we can select the $T$ providing the best model fit. This may not always converge but in the package there is a function that visualize the fit given a search boundary for $T$ (Figure~\ref{fig:opt}). Note, the exponential survival function is set as default because it easily converges with a single parameter. Other distributions can also be selected. It is also important to note that currently no tests are made for the presence of a lag-effect. The method may give a change-point estimate though there is none and therefore it is also important to visually inspect the data (see also Section~\ref{sec:leftfit})   
+It is evident that the model fit is poor which is not surprising due to the nature 
+of the data. Assuming that we have a change-point ($T$), there are various ways of 
+estimating when this occurs. Perhaps the simplest is to include a co-variate (factor) 
+in the survival method which is true if a subject is in the lag period and false 
+otherwise. With an exponential survival function we can model the event rate as 
+if constant before and after T. Given a set of possible change-points we can select 
+the $T$ providing the best model fit. This may not always converge but in the package 
+there is a function that visualize the fit given a search boundary for $T$ (Figure~\ref{fig:opt}). 
+Note, the exponential survival function is set as default because it easily converges 
+with a single parameter. Other distributions can also be selected. It is also important 
+to note that currently no tests are made for the presence of a lag-effect. The method 
+may give a change-point estimate though there is none and therefore it is also important 
+to visually inspect the data (see also Section~\ref{sec:leftfit})   
 <<opt, fig.cap="The optimal change-point based on an exponential model with a time covariate/indicator.">>=
   est.obj <- estimateLagTime( my.data, t.start=0.5, t.stop=20, dt=0.5 )
   plot( est.obj )
@@ -81,7 +94,14 @@ It is evident that the model fit is poor which is not surprising due to the natu
 
 
 \section{Right censor data based on the KM curve}
-Different survival functions will be fitted before and after the estimated change-point dividing it into two parts. Since time in this case is subject specific, it will be relative to when subjects entered the study. The first part of the interval $[0,T)$ will be equivalent to a study with a fixed follow-up period of $T$ meaning that no subject is studied longer than $T$. We will refer to this data (and model) as \emph{KM right censored}. The package allows for cutting the data in this way using the function \texttt{KMRightCensor}. Then the normal \texttt{fit} function of the eventPrediction package will be used (Figure~\ref{fig:rightcens}).
+Different survival functions will be fitted before and after the estimated change-point 
+dividing it into two parts. Since time in this case is subject specific, it will 
+be relative to when subjects entered the study. The first part of the interval $[0,T)$ 
+will be equivalent to a study with a fixed follow-up period of $T$ meaning that 
+no subject is studied longer than $T$. We will refer to this data (and model) as 
+\emph{KM right censored}. The package allows for cutting the data in this way using 
+the function \texttt{KMRightCensor}. Then the normal \texttt{fit} function of the 
+eventPrediction package will be used (Figure~\ref{fig:rightcens}).
  
 <<rightcens, fig.cap="The model fitted on the right censored data.">>=
 right.cens.data <- KMRightCensor( my.data, estLagT )
@@ -101,7 +121,15 @@ my.fit@simParams@parameters
 
 \section{Fit a model on left truncated data}
 \label{sec:leftfit}
-The second part of the data will only contain subjects that survived longer than the change-point $[T,T_{analysis}]$ where $T_{analysis}$ is the time, relative to randomization, that we censored the subjects. This data (and model) will be referred to as \emph{left-truncated} as the subject has been at risk before entering the interval; it is conditioned that they have not had an event. The \texttt{LeftFit} function performs the necessary steps by first removing subjects with $t<T$ and then it fits the Weibull model. The estimation is done with the \texttt{weibreg} function from the \texttt{eha} package which is used internally, see vignette for more details and \cite{Brostrom:2012}.  
+The second part of the data will only contain subjects that survived longer than 
+the change-point $[T,T_{analysis}]$ where $T_{analysis}$ is the time, relative to 
+randomization, that we censored the subjects. This data (and model) will be referred 
+to as \emph{left-truncated} as the subject has been at risk before entering the 
+interval; it is conditioned that they have not had an event. The \texttt{LeftFit} 
+function performs the necessary steps by first removing subjects with $t<T$ and 
+then it fits the Weibull model. The estimation is done with the \texttt{weibreg} 
+function from the \texttt{eha} package which is used internally, see vignette for 
+more details and \cite{Brostrom:2012}.  
 
 <<both, fig.cap="Including the model fitted on the left truncated and right censored data.">>=
  left.trunc.fit <- LeftFit( my.data, estLagT )
@@ -109,7 +137,16 @@ The second part of the data will only contain subjects that survived longer than
  plot( right.cens.fit, left.trunc.fit )
 @
 
-While the fit is much better than the original one, we can see that the tail may not be fully captured (Figure~\ref{fig:both}). Depending on the censoring status of the data and other aspects it may be hard to entirely automate the estimation of the change-point. Sometimes, for example, it may be more important to capture the tail of the distribution. Therefore it is important also to visually inspect the resulting curves. The implemented approach allows us to adjust the change-point and refit the models. In this case the tail may be better modelled by increasing it from $152$ to $160$ days (Figure~\ref{fig:bothmod}). In later versions (See Section~\ref{sec:futwork}) we aim to include an estimate of a CI for the change-point which would give an indication of the plausible value range.
+While the fit is much better than the original one, we can see that the tail may 
+not be fully captured (Figure~\ref{fig:both}). Depending on the censoring status 
+of the data and other aspects it may be hard to entirely automate the estimation 
+of the change-point. Sometimes, for example, it may be more important to capture 
+the tail of the distribution. Therefore it is important also to visually inspect 
+the resulting curves. The implemented approach allows us to adjust the change-point 
+and refit the models. In this case the tail may be better modelled by increasing 
+it from $152$ to $160$ days (Figure~\ref{fig:bothmod}). In later versions (See 
+Section~\ref{sec:futwork}) we aim to include an estimate of a CI for the change-point 
+which would give an indication of the plausible value range.
 
 <<bothmod, fig.cap="Including the model fitted on the left truncated and right censored data after moving the change-point.">>=
  estLagT <- 160 
@@ -120,7 +157,9 @@ While the fit is much better than the original one, we can see that the tail may
 @
 
 \section{Event Prediction}
-We use an updated simulation procedure to incorporate the contribution from both models. For all patients, that have not had events and been in the trial for time $t$, we simulate events by: 
+We use an updated simulation procedure to incorporate the contribution from both 
+models. For all patients, that have not had events and been in the trial for time 
+$t$, we simulate events by: 
 \begin{enumerate}
 \item If $t<T$ draw an event time $t_{rc}$ from the right-censored model. 
 \begin{enumerate}
