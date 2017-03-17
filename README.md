@@ -25,6 +25,9 @@ Dalevi, Daniel (maintainer); Burkoff, Nikolas; Ruau, David;
 To install the development version from GitHub:
 ```R
 install.packages("devtools")
+# eventTools use eventPrediction
+devtools::install_github("scientific-computing-solutions/eventPrediction", 
+                         build_vignettes = TRUE)
 # We spent a lot of time developing the vignettes. We recommend the read but 
 # building them from source takes some time
 devtools::install_github("scientific-computing-solutions/eventTools", 
