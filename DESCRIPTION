@@ -3,7 +3,14 @@ Type: Package
 Title: Additional Extensions/Functionality for the eventPrediction Package
 Version: 2.0
 Date: 2016-09-26
-Author: Daniel Dalevi
+Author@R: c(
+    person("Daniel", "Dalevi",
+          email = "daniel.dalevi@astrazeneca.com",
+          role = c("aut", "cre")),
+    person("David", "Ruau",
+          email = "davidruau@gmail.com",
+          role = c("aut"))
+  )
 Maintainer: Daniel Dalevi <daniel.dalevi@astrazeneca.com>
 Description: Extensions to the eventPrediction package for non-proportional
     hazard models.
