@@ -4,7 +4,7 @@
 \usepackage{hyperref}
 \usepackage{fullpage}
 %\usepackage[firstpage]{draftwatermark}
-\title{EventTools (v2.0): Weibull mixture (2 subgroups)}
+\title{EventTools: Weibull mixture (2 subgroups)}
 \author{Daniel Dalevi}
 % \VignetteIndexEntry{Predict from data - Basic tutorial}
 %\VignetteEngine{knitr::knitr} 

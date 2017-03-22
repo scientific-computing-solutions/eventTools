@@ -14,8 +14,7 @@ Author@R: c(
           role = c("aut"))
   )
 Maintainer: Daniel Dalevi <daniel.dalevi@astrazeneca.com>
-Description: Extensions to the eventPrediction package for non-proportional
-    hazard models.
+Description: Extensions to the eventPrediction package for N-piecewise Weibull and Weibull mixture models.
 License: GPL (>=2) | file LICENSE
 Depends:
     ggplot2,
