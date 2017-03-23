@@ -49,7 +49,8 @@ of $1.2$. An example of what the survival curves of the study look like (not the
 simulated data used here) can be visualized using the (yet to be released)
 \texttt{nonproportionalHazards} package (Figure~\ref{fig:nphz}).
 <<nphz, echo=FALSE, fig.cap="Visualizing the settings for the simulated data.">>=
-# This dataset was build using an internally developped R package at AZ (to be released)
+# This dataset can be visuallized using an internally developped R package at AZ 
+# (to be released)
 # library( nonproportionalHazards )
 # study <- delayedResponse( lag.time=5.5,
 #                           median.control.time=5.8,

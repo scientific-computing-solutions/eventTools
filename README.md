@@ -6,19 +6,19 @@
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/scientific-computing-solutions/eventTools?branch=master&svg=true)](https://ci.appveyor.com/project/scientific-computing-solutions/eventTools)
 [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/eventTools)](https://cran.r-project.org/package=eventTools)
 
-Extension to the eventPrediction package for N-piecewise Weibull and lagtimes
+Extension to the eventPrediction package for N-piecewise Weibull and Weibull mixture models.
 
 The eventTools package contains some extensions of functionality for the eventPrediction 
 package. It will use the same interface when possible and the idea is to mimic the 
 command-sequences used and propagate the functionality (accrual processes, dropouts etc). 
-The first add-in is a method to allow for a change in the event rates at a specific 
-time-point resulting from, for example, a lag-period. The data is aggregated during 
+The first add-in is a method to allow for changes in the event rates at specific 
+time-points resulting from, for example, a lag-period. The data is aggregated during 
 an ongoing trial and will be assumed blinded. This is related to the Predict from 
 data functionality and is available in version $\ge 1.0$ of the eventTools package. 
 The plan is to include more functionality to this package with iterative releases. 
 
 ## Contributors
-Dalevi, Daniel (maintainer); Burkoff, Nikolas; Ruau, David;
+Dalevi, Daniel (maintainer); Ruau, David;
 
 ## Installation
 
