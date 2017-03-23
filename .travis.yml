@@ -17,7 +17,7 @@ r_github_packages:
 
 before_install: 
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then 
-      sudo tlmgr install preprint url; fi
+      sudo tlmgr install preprint url
       brew update > dev/null
       brew outdated pkg-config || brew upgrade pkg-config
       brew install jags
