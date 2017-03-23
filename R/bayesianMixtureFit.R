@@ -190,7 +190,7 @@ setMethod( "BayesianMixtureFit",
         stop( "N.proc needs to be defined and greater than 1!")
       }
       library( parallel )
-      cl <- makeCluster( N.chains )
+      cl <- parallel::makeCluster( N.chains )
       model.fit <- run.jags( data = jags.data,
                              model = my.model,
                              monitor = c( "mu", "scale", "shape", "pi", "subgroup" ),
@@ -202,7 +202,7 @@ setMethod( "BayesianMixtureFit",
                              summarise = FALSE,
                              inits = jags.inits,
                              cl = cl )
-      stopCluster( cl )
+      parallel::stopCluster( cl )
     }
     
     # Retrieve the mcmc object

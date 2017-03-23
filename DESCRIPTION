@@ -3,9 +3,7 @@ Type: Package
 Title: Additional Extensions/Functionality for the eventPrediction Package
 Version: 2.0
 Date: 2016-09-26
-Author: Daniel Dalevi [aut, cre],
-    David Ruau [aut]
-Author@R: c(
+Authors@R: c(
     person("Daniel", "Dalevi",
           email = "daniel.dalevi@astrazeneca.com",
           role = c("aut", "cre")),
@@ -18,11 +16,11 @@ Description: Extensions to the eventPrediction package for non-proportional
     hazard models.
 License: GPL (>=2) | file LICENSE
 Depends:
+    survival,
+    methods,
     ggplot2,
     lattice,
-    survival,
     eha,
-    methods,
     scales,
     runjags,
     coda,

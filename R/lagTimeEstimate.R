@@ -93,15 +93,6 @@ setMethod( "getEstimate",signature=c( "LagTimeEstimate" ),
 ##' Plot method for LagTimeEstimate objects
 ##' @name plot
 ##' @rdname plot-methods
-##' @param x EventModel, EventModelExtended or LagTimeEstimate 
-##' @param y missing or EventModelExtended
-##' @param xlab X-label titel
-##' @param ylab Y-label titel
-##' @param main Plot titel
-##' @param ylim Y-range
-##' @param xlim X-range 
-##' @param smoothing If true will add a smoothed line to the curve and use
-##' that for when retreiving the optimal time value.
 ##' @aliases plot,LagTimeEstimate,missing-method
 ##' @export
 setMethod( "plot",

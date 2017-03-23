@@ -63,7 +63,7 @@ plotSegment <- function( seg, col, xscale ){
 ##' @rdname plot-methods
 ##' @aliases plot,EventModelExtended,missing-method
 setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
-  function(x, xlab=paste("Time in study [",units,"]",sep=""),
+  function(x, units="Days", xlab=paste("Time in study [",units,"]",sep=""),
                 ylab="", main="", ylim=NULL, xlim=NULL, ...) { 
       warning( paste0( "This function is not yet defined, please use: ",
                 "plot( right.censored.model, left.truncated.model )" ) )
@@ -76,8 +76,6 @@ setMethod( "plot", signature( x="EventModelExtended", y="missing" ),
 
 ##' Plots the EventModel,EventModelExtended object
 ##' @rdname plot-methods
-##' @param units Scale for the x-axis. "Days", "Months" or "Years"
-##' @param ... Additional arguments to be passed to the method
 ##' @aliases plot,EventModel,EventModelExtended-method
 ## Basically joins the curves where the right-cens model ends. Are there otherways to do this?
 setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
@@ -127,8 +125,6 @@ setMethod( "plot", signature( x="EventModel", y="EventModelExtended" ),
 ##' Plots an arbitrary number of change points where the EventModel and a list 
 ##' of EventModelExtended objects are given
 ##' @rdname plot-methods
-##' @param units Scale for the x-axis. "Days", "Months" or "Years"
-##' @param ... Additional arguments to be passed to the method
 ##' @aliases plot,EventModel,list-method
 ## Basically joins the curves where the right-cens model ends. Are there otherways to do this?
 setMethod( "plot", signature( x="EventModel", y="list" ),

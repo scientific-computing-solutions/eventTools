@@ -14,9 +14,9 @@
   xlab = paste("Time in study [", units, "]", sep = ""), ylab = "",
   main = "", ylim = NULL, xlim = NULL, ...)
 
-\S4method{plot}{EventModelExtended,missing}(x, xlab = paste("Time in study [",
-  units, "]", sep = ""), ylab = "", main = "", ylim = NULL, xlim = NULL,
-  ...)
+\S4method{plot}{EventModelExtended,missing}(x, units = "Days",
+  xlab = paste("Time in study [", units, "]", sep = ""), ylab = "",
+  main = "", ylim = NULL, xlim = NULL, ...)
 
 \S4method{plot}{EventModel,EventModelExtended}(x, y, units = "Days",
   xlab = paste("Time in study [", units, "]", sep = ""), ylab = "",
@@ -29,9 +29,9 @@
 \S4method{plot}{LagTimeEstimate,missing}(x, smoothing = TRUE, ...)
 }
 \arguments{
-\item{x}{EventModel, EventModelExtended or LagTimeEstimate}
+\item{x}{EventModel, EventModelExtended, EventModelBayesian or LagTimeEstimate}
 
-\item{units}{Days or Months}
+\item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
 
 \item{xlab}{X-label titel}
 
@@ -45,20 +45,12 @@
 
 \item{...}{Additional arguments to be passed to the method}
 
-\item{y}{missing or EventModelExtended}
+\item{y}{For missing or EventModelExtended objects only}
 
-\item{z}{dummy}
+\item{z}{dummy [EventModel only]}
 
-\item{smoothing}{If true will add a smoothed line to the curve and use
-that for when retreiving the optimal time value.}
-
-\item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
-
-\item{...}{Additional arguments to be passed to the method}
-
-\item{units}{Scale for the x-axis. "Days", "Months" or "Years"}
-
-\item{...}{Additional arguments to be passed to the method}
+\item{smoothing}{[LagTimeEstimate objects only] If true will add a smoothed 
+line to the curve and use that for when retreiving the optimal time value.}
 }
 \description{
 Plots the EventModelBayesian object

@@ -58,8 +58,17 @@ setMethod("show",
 
 ##' Plots the EventModelBayesian object
 ##' @rdname plot-methods
-##' @param z dummy
-##' @param units Days or Months
+##' @param x EventModel, EventModelExtended, EventModelBayesian or LagTimeEstimate 
+##' @param y For missing or EventModelExtended objects only
+##' @param z dummy [EventModel only]
+##' @param units Scale for the x-axis. "Days", "Months" or "Years"
+##' @param xlab X-label titel
+##' @param ylab Y-label titel
+##' @param main Plot titel
+##' @param ylim Y-range
+##' @param xlim X-range 
+##' @param smoothing [LagTimeEstimate objects only] If true will add a smoothed 
+##' line to the curve and use that for when retreiving the optimal time value.
 ##' @param ... Additional arguments to be passed to the method
 ##' @aliases plot,EventModelBayesian,missing-method
 setMethod( "plot", signature( x="EventModelBayesian", y="missing" ),
