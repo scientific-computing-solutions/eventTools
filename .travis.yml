@@ -6,12 +6,9 @@ os:
 #  - linux
   - osx
 
-matrix:
-  include:
-    - compiler: gcc
-      os: linux
-      - compiler: clang
-      os: osx
+compiler:
+  - gcc
+  - clang
 
 apt_packages:
   - jags
