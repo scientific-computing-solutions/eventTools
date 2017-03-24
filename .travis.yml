@@ -24,8 +24,8 @@ before_install:
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo tlmgr install preprint url; fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew update; fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew outdated pkg-config || brew upgrade pkg-config; fi
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then rm '/usr/local/bin/gfortran'; fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gcc; fi
-  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew link --overwrite gcc; fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install jags; fi
 #  - Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org')"
 #  - Rscript -e "devtools::install_github('scientific-computing-solutions/eventPrediction')"
