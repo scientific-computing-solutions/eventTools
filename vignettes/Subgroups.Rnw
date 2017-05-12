@@ -1,0 +1,105 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{fullpage}
+\usepackage[firstpage]{draftwatermark}
+\title{EventTools: Separate models per subgroup}
+\author{Daniel Dalevi}
+
+\SetWatermarkText{DRAFT: UNDER DEVELOPMENT}
+\SetWatermarkLightness{0.75}
+\SetWatermarkScale{2}
+
+\begin{document}
+\sloppy
+
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(
+concordance=TRUE
+)
+@
+
+\maketitle
+
+\section{Introduction}
+The eventTools package contains some extensions of functionality for the eventPrediction package. It will use the same interface when possible and the idea is to mimic the command-sequences used and propagate the functionality (accrual processes, dropouts etc).
+
+In this extension we allow fitting of models to a subgroup and its complement, for example, using unblinded data where the treatment allocation is available (active and control). Another situation could be if you change the inclusion criteria in the middle of the trial and the more newly recruited patients need to be modelled differently to the rest. Both these scenarious can be better modelled if we fit separate models to the subgroups. 
+
+\section{Preliminary steps}
+Before starting this tutorial you will need to install the eventPrediction and the eventTools packages and their dependencies. For all examples below, ensure you load the libraries first.
+<<load,message=FALSE>>=
+library( eventPrediction )
+library( eventTools )
+@
+
+The dataset we use in this example contains $1000$ patients randomized equally to the two arms \emph{Control} and \emph{Active}. It is simulated using the proportional hazards assumption corresponding to two Weibull models with the same shape ($2$) but different scale parameters. The control arm has a median survival of $5$ months and the HR was set to $0.1$. The dataset is loaded into R and an EventData object is created. Note that we let the subgroup variable correspond to the treatment allocation. The 
+<<>>=
+load( "~/BandI/eventTools/data/subgroup.rda" )
+
+my.data <- EventData( data=subgroup.data,
+                      subject="subject",
+                      rand.date="randDate",
+                      has.event="hasEvent",
+                      withdrawn="withdrawn",
+                      subgroup = "arm",
+                      time="time" )
+@
+
+We can see that the data does not seem to fit a Weibull using a single arm (blinded). 
+<<>>=
+plot( my.data )
+@
+
+However, by splitting per arm we can also see that we have proportional hazards (parallel lines).
+<<>>=
+plot( my.data, by.subgroup=TRUE )
+@
+
+\subsection{Weibull distributions}
+The eventTools package allows fitting separate models per subgroup. The default are two Weibulls. 
+<<>>=
+my.fit <- SubgroupFit( my.data )
+plot( my.fit )
+@
+
+Note, this can be compared to fitting using a single model
+<<>>=
+ plot( fit( my.data ) )
+@
+
+The parameters of the fitted models can be obtained by:
+<<>>=
+params( my.fit )
+@
+
+Here we predict when $900$ events will occur.
+<<>>=
+results <- simulateSub( my.fit,
+    Nsim = 500, #Number of simulations to perform
+    seed = 20170322 ) #A random seed for reproducibility
+results <- predict( results, event.pred=900 )
+  plot( results, show.title=TRUE)
+@
+
+
+\subsection{Loglogistic distributions}
+The same can be applied by fitting two different distributions to each arm.
+<<>>=
+my.fit <- SubgroupFit( my.data, dist.1="loglogistic", dist.2="loglogistic" )
+plot( my.fit )
+@
+
+Here we predict when $900$ events will occur.
+<<>>=
+results <- simulateSub( my.fit,
+    Nsim = 500, #Number of simulations to perform
+    seed = 20170322 ) #A random seed for reproducibility
+results <- predict( results, event.pred=900 )
+plot( results, show.title=TRUE, xlim=c(0,70))
+@
+
+\end{document}
+

@@ -1,7 +1,7 @@
 Package: eventTools
 Type: Package
 Title: Additional Extensions/Functionality for the eventPrediction Package
-Version: 2.0
+Version: 2.1
 Date: 2016-09-26
 Author: Daniel Dalevi [aut, cre],
     David Ruau [aut]
@@ -14,7 +14,8 @@ Author@R: c(
           role = c("aut"))
   )
 Maintainer: Daniel Dalevi <daniel.dalevi@astrazeneca.com>
-Description: Extensions to the eventPrediction package for N-piecewise Weibull and Weibull mixture models.
+Description: Extensions to the eventPrediction package for N-piecewise Weibull and Weibull mixture models. 
+             It also allows fitting of separate Weibull models to a subgroup and its complement. 
 License: GPL (>=2) | file LICENSE
 Depends:
     ggplot2,
