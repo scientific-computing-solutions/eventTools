@@ -8,14 +8,15 @@
 
 Extension to the eventPrediction package for N-piecewise Weibull and Weibull mixture models.
 
-The eventTools package contains some extensions of functionality for the eventPrediction 
-package. It will use the same interface when possible and the idea is to mimic the 
-command-sequences used and propagate the functionality (accrual processes, dropouts etc). 
-The first add-in is a method to allow for changes in the event rates at specific 
-time-points resulting from, for example, a lag-period. The data is aggregated during 
-an ongoing trial and will be assumed blinded. This is related to the Predict from 
-data functionality and is available in version $\ge 1.0$ of the eventTools package. 
-The plan is to include more functionality to this package with iterative releases. 
+The eventTools package contains some extensions of functionality for the eventPrediction
+package. It will use the same interface when possible and the idea is to mimic the
+command-sequences used and propagate the functionality (accrual processes, dropouts etc).
+The first add-in is a method to allow for changes in the event rates at specific
+time-points resulting from, for example, a lag-period.  The second add-in implements
+a Weibull mixture model for dealing with subgroups. The data is aggregated during
+an ongoing trial and will be assumed blinded. This is related to the Predict from
+data functionality and is available in version $\ge 1.0$ of the eventTools package.
+The plan is to include more functionality to this package with iterative releases.
 
 ## Contributors
 Dalevi, Daniel (maintainer); Ruau, David;
