@@ -69,7 +69,7 @@ simulated data used here) can be visualized using the (yet to be released)
 
 \begin{figure}[h]
   \centering
-    \includegraphics[width=0.8\textwidth]{../data/lagTimePlot.pdf}
+    \includegraphics[width=0.8\textwidth]{lagTimePlot.pdf}
   \caption{Visualizing the settings for the simulated data.}
   \label{fig:nphz}
 \end{figure}

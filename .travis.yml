@@ -1,10 +1,12 @@
 language: r
-cache: 
-  packages: true
 
 os:
   - linux
   - osx
+
+matrix:
+  allow_failures:
+    - os: osx
 
 apt_packages:
   - jags
@@ -14,11 +16,14 @@ repos:
 
 r_github_packages:
   - jimhester/covr
+  - scientific-computing-solutions/eventPrediction
 
 before_install: 
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then sudo tlmgr install preprint url; fi
-  - Rscript -e "install.packages('devtools', repos='https://cloud.r-project.org')"
-  - Rscript -e "devtools::install_github('scientific-computing-solutions/eventPrediction')"
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew update; fi
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew outdated pkg-config || brew upgrade pkg-config; fi
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install gcc || brew link --overwrite gcc; fi
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install jags; fi
 
 after_success:
   - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then echo 'covr::coveralls(quiet=FALSE)' | R --vanilla; fi
